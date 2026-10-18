@@ -1,0 +1,110 @@
+package com.app.financas.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import com.app.financas.model.Ganho;
+
+public class GanhoDAO {
+
+    public ArrayList<Ganho> listGanhos() throws SQLException {
+        String sql = "SELECT id, valor, plataforma, Cadastrado_Em AS data FROM ganhos";
+        ArrayList<Ganho> ganhos = new ArrayList<>();
+
+        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql); var resultado = comando.executeQuery()) {
+
+            while (resultado.next()) {
+                int id = resultado.getInt("id");
+                double valor = resultado.getDouble("valor");
+                String plataforma = resultado.getString("plataforma");
+                LocalDate data = resultado.getDate("data").toLocalDate();
+
+                Ganho ganho = new Ganho(id, valor, plataforma, data);
+                ganhos.add(ganho);
+            }
+        }
+        return ganhos;
+    }
+
+    public ArrayList<Ganho> listarPorPeriodo(LocalDate inicio, LocalDate fim) throws SQLException {
+        String sql = "SELECT id, valor, plataforma, Cadastrado_Em AS data FROM ganhos "
+                + "WHERE Cadastrado_Em BETWEEN ? AND ? ORDER BY Cadastrado_Em, id";
+        ArrayList<Ganho> ganhos = new ArrayList<>();
+
+        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+            comando.setDate(1, java.sql.Date.valueOf(inicio));
+            comando.setDate(2, java.sql.Date.valueOf(fim));
+            try (var resultado = comando.executeQuery()) {
+                while (resultado.next()) {
+                    ganhos.add(new Ganho(
+                        resultado.getInt("id"),
+                        resultado.getDouble("Valor"),
+                        resultado.getString("plataforma"),
+                       resultado.getDate("data").toLocalDate()
+                    )
+                );
+            
+                    
+                }
+            }
+            }
+            return ganhos;
+        }
+
+    
+
+    public boolean atualizar(Ganho ganho) throws SQLException {
+        String sql = "UPDATE ganhos set valor = ?, plataforma = ? WHERE id = ?";
+        int linhasAfetadas;
+        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+            comando.setDouble(1, ganho.getValor());
+            comando.setString(2, ganho.getPlataforma());
+            comando.setInt(3, ganho.getId());
+            linhasAfetadas = comando.executeUpdate();
+
+        }
+        return linhasAfetadas > 0;
+    }
+
+    public boolean deletar(int id) throws SQLException {
+        String sql = "DELETE from ganhos WHERE id = ?";
+        int linhasAfetadas;
+        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+            comando.setInt(1, id);
+            linhasAfetadas = comando.executeUpdate();
+
+        }
+        return linhasAfetadas > 0;
+
+    }
+
+    public void salvar(Ganho ganho) throws SQLException {
+        String sql = "INSERT INTO ganhos (valor, plataforma, Cadastrado_Em) VALUES (?, ?, ?)";
+
+        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+            comando.setDouble(1, ganho.getValor());
+            comando.setString(2, ganho.getPlataforma());
+            comando.setObject(3, ganho.getData());
+            comando.executeUpdate();
+        }
+    }
+    public double totalPorPlataforma(String plataforma) throws SQLException {
+        String sql = "SELECT SUM(valor) FROM ganhos WHERE plataforma = ?";
+
+        try (Connection conn = Conexao.conectar();
+             PreparedStatement comando = conn.prepareStatement(sql)) {
+            comando.setString(1, plataforma);
+
+            try (ResultSet resultado = comando.executeQuery()) {
+                if (resultado.next()) {
+                    return resultado.getDouble(1);
+                }
+            }
+        }
+
+        return 0.0;
+    }
+}

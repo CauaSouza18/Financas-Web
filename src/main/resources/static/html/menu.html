@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f2f3ef">
+    <title>Ganhos | Finanças</title>
+    <link rel="stylesheet" href="../css/menu.css">
+</head>
+
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="#inicio"><span class="brand-mark">F</span><span>Finanças</span></a>
+            <nav aria-label="Menu principal">
+                <a class="nav-item active" href="#inicio">Visão geral</a>
+                <a class="nav-item" href="#lancamentos">Lançamentos</a>
+                <a class="nav-item" href="#relatorios">Relatórios</a>
+            </nav>
+            <a class="logout" href="login.html">Sair da conta</a>
+        </aside>
+
+        <main id="inicio">
+            <header class="topbar">
+                <span class="mobile-brand"><span class="brand-mark">F</span> Finanças</span>
+                <span class="topbar-label">Área do motorista</span>
+                <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
+                    <span aria-hidden="true">◐</span> <span id="theme-label">Modo escuro</span>
+                </button>
+                <span class="account">CS</span>
+            </header>
+
+            <div class="page-content">
+                <section class="page-heading">
+                    <div>
+                        <p class="eyebrow">RESUMO</p>
+                        <h1>Ganhos</h1>
+                        <p class="subtitle">Acompanhe o que entrou em cada aplicativo.</p>
+                    </div>
+                    <div class="period-label">Outubro de 2026</div>
+                </section>
+
+                <section class="overview" aria-label="Resumo dos ganhos">
+                    <div class="monthly-total">
+                        <span class="section-label">Total registrado no mês</span>
+                        <strong id="total-geral">Carregando...</strong>
+
+                        <span class="total-caption" id="quantidade-ganhos">2 lançamentos</span>
+                    </div>
+                    <div class="platform-list" id="relatorios">
+                        <h2>Por aplicativo</h2>
+                        <div class="platform-row"><span>99</span><strong id="total-99">R$ 1.098,00</strong></div>
+                        <div class="platform-row"><span>iFood</span><strong id="total-ifood">R$ 0,00</strong></div>
+                        <div class="platform-row"><span>Uber Driver</span><strong id="total-uber">R$ 0,00</strong></div>
+                    </div>
+                </section>
+
+                <section class="transactions" id="lancamentos">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Lançamentos recentes</h2>
+                            <p>Registros feitos no aplicativo</p>
+                        </div>
+                        <span class="count">2 registros</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Aplicativo</th>
+                                    <th>ID</th>
+                                    <th class="amount">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            <tbody id="lista-ganhos"></tbody>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="demo-note">Dados de demonstração. A tela ainda não está conectada ao banco.</p>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script>
+        const themeButton = document.getElementById("theme-toggle");
+        const themeLabel = document.getElementById("theme-label");
+        async function carregarGanhos() {
+            const resposta = await fetch("/api/ganhos");
+            const ganhos = await resposta.json();
+            const total = ganhos.reduce((soma, ganho) => soma + Number(ganho.valor), 0);
+const formatarMoeda = valor =>
+    valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const somarPlataforma = plataforma =>
+    ganhos
+        .filter(ganho => ganho.plataforma === plataforma)
+        .reduce((soma, ganho) => soma + Number(ganho.valor), 0);
+
+document.querySelector("#total-99").textContent =
+    formatarMoeda(somarPlataforma("99"));
+
+document.querySelector("#total-ifood").textContent =
+    formatarMoeda(somarPlataforma("iFood"));
+
+document.querySelector("#total-uber").textContent =
+    formatarMoeda(somarPlataforma("Uber Driver"));
+            document.querySelector("#total-geral").textContent =
+                total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+            document.querySelector("#quantidade-ganhos").textContent =
+                `${ganhos.length} lançamentos`;
+            const tabela = document.querySelector("#lista-ganhos");
+
+            ganhos.forEach(ganho => {
+                const linha = document.createElement("tr");
+
+                linha.innerHTML = `
+            <td>${ganho.data}</td>
+            <td>${ganho.plataforma}</td>
+            <td class="record-id">${ganho.id}</td>
+            <td class="amount">${ganho.valor}</td>
+        `;
+
+                tabela.appendChild(linha);
+            });
+        }
+
+        carregarGanhos();
+
+        function setTheme(theme) {
+            const dark = theme === "dark";
+            document.documentElement.dataset.theme = dark ? "dark" : "light";
+            themeButton.setAttribute("aria-pressed", String(dark));
+            themeLabel.textContent = dark ? "Modo claro" : "Modo escuro";
+            document.querySelector('meta[name="theme-color"]').content = dark ? "#171a18" : "#f2f3ef";
+        }
+
+        setTheme(localStorage.getItem("financas-theme") || "light");
+        themeButton.addEventListener("click", () => {
+            const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+            localStorage.setItem("financas-theme", nextTheme);
+            setTheme(nextTheme);
+        });
+    </script>
+</body>
+
+</html>
