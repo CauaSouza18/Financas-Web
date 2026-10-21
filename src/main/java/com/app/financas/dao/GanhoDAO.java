@@ -57,12 +57,13 @@ public class GanhoDAO {
     
 
     public boolean atualizar(Ganho ganho) throws SQLException {
-        String sql = "UPDATE ganhos set valor = ?, plataforma = ? WHERE id = ?";
+        String sql = "UPDATE ganhos set valor = ?, plataforma = ?, Cadastrado_Em = ? WHERE id = ?";
         int linhasAfetadas;
         try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setDouble(1, ganho.getValor());
             comando.setString(2, ganho.getPlataforma());
-            comando.setInt(3, ganho.getId());
+            comando.setObject(3, ganho.getData());
+            comando.setInt(4, ganho.getId());
             linhasAfetadas = comando.executeUpdate();
 
         }

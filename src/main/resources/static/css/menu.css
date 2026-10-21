@@ -129,7 +129,15 @@ tbody tr:last-child td { border-bottom: 0; }
 .button:hover { background: var(--hover); }
 .button-primary { border-color: var(--green); background: var(--green); color: var(--paper); }
 .button-primary:hover { background: var(--green); filter: brightness(1.1); }
-.button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.button:focus-visible, .row-button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.actions { width: 1%; text-align: right; }
+td.actions { padding-top: 8px; padding-bottom: 8px; }
+.row-button {
+    margin-left: 4px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 5px;
+    background: transparent; color: var(--secondary-ink); font: inherit; font-size: 11px; cursor: pointer;
+}
+.row-button:hover { background: var(--hover); color: var(--ink); }
+.row-button.danger:hover { border-color: #c2534a; color: #c2534a; }
 .empty-row { padding: 28px 18px; text-align: center; color: var(--muted); }
 .demo-note { margin: 0; padding: 11px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
 .nav-item:focus-visible, .logout:focus-visible, .brand:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
