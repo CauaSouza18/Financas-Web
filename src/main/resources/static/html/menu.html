@@ -10,144 +10,190 @@
 </head>
 
 <body>
-    <div class="app-shell">
-        <aside class="sidebar">
-            <a class="brand" href="#inicio"><span class="brand-mark">F</span><span>Finanças</span></a>
-            <nav aria-label="Menu principal">
-                <a class="nav-item active" href="#inicio">Visão geral</a>
-                <a class="nav-item" href="#lancamentos">Lançamentos</a>
-                <a class="nav-item" href="#relatorios">Relatórios</a>
-            </nav>
-            <a class="logout" href="login.html">Sair da conta</a>
-        </aside>
+<div class="app-shell">
+    <aside class="sidebar">
+        <a class="brand" href="#inicio"><span class="brand-mark">F</span><span>Finanças</span></a>
+        <nav aria-label="Menu principal">
+            <a class="nav-item active" href="#inicio">Visão geral</a>
+            <a class="nav-item" href="#lancamentos">Lançamentos</a>
+            <a class="nav-item" href="#relatorios">Relatórios</a>
+        </nav>
+        <a class="logout" href="login.html">Sair da conta</a>
+    </aside>
 
-        <main id="inicio">
-            <header class="topbar">
-                <span class="mobile-brand"><span class="brand-mark">F</span> Finanças</span>
-                <span class="topbar-label">Área do motorista</span>
-                <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
-                    <span aria-hidden="true">◐</span> <span id="theme-label">Modo escuro</span>
-                </button>
-                <span class="account">CS</span>
-            </header>
+    <main id="inicio">
+        <header class="topbar">
+            <span class="mobile-brand"><span class="brand-mark">F</span> Finanças</span>
+            <span class="topbar-label">Área do motorista</span>
+            <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
+                <span aria-hidden="true">◐</span> <span id="theme-label">Modo escuro</span>
+            </button>
+            <span class="account">CS</span>
+        </header>
 
-            <div class="page-content">
-                <section class="page-heading">
+        <div class="page-content">
+            <section class="page-heading">
+                <div>
+                    <p class="eyebrow">RESUMO</p>
+                    <h1>Ganhos</h1>
+                    <p class="subtitle">Acompanhe o que entrou em cada aplicativo.</p>
+                </div>
+                <div class="period-label">Outubro de 2026</div>
+            </section>
+
+            <section class="overview" aria-label="Resumo dos ganhos">
+                <div class="monthly-total">
+                    <span class="section-label">Total registrado no mês</span>
+                    <strong id="total-geral">Carregando...</strong>
+
+                    <span class="total-caption" id="quantidade-ganhos">2 lançamentos</span>
+                </div>
+                <div class="platform-list" id="relatorios">
+                    <h2>Por aplicativo</h2>
+                    <div class="platform-row"><span>99</span><strong id="total-99">R$ 1.098,00</strong></div>
+                    <div class="platform-row"><span>iFood</span><strong id="total-ifood">R$ 0,00</strong></div>
+                    <div class="platform-row"><span>Uber Driver</span><strong id="total-uber">R$ 0,00</strong></div>
+                </div>
+            </section>
+            <section class="transactions">
+                <h2>Adicionar ganho</h2>
+
+                <form id="form-ganho">
+                    <label for="valor">Valor</label>
+                    <input id="valor" type="number" min="0.01" step="0.01" required>
+
+                    <label for="plataforma">Aplicativo</label>
+                    <select id="plataforma" required>
+                        <option value="">Selecione</option>
+                        <option value="99">99</option>
+                        <option value="iFood">iFood</option>
+                        <option value="Uber Driver">Uber Driver</option>
+                    </select>
+
+                    <label for="data">Data</label>
+                    <input id="data" type="date" required>
+
+                    <button type="submit">Salvar ganho</button>
+                </form>
+            </section>
+            <section class="transactions" id="lancamentos">
+                <div class="section-heading">
                     <div>
-                        <p class="eyebrow">RESUMO</p>
-                        <h1>Ganhos</h1>
-                        <p class="subtitle">Acompanhe o que entrou em cada aplicativo.</p>
+                        <h2>Lançamentos recentes</h2>
+                        <p>Registros feitos no aplicativo</p>
                     </div>
-                    <div class="period-label">Outubro de 2026</div>
-                </section>
+                    <span class="count" id="contagem-registros">Carregando...</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Aplicativo</th>
+                            <th>ID</th>
+                            <th class="amount">Valor</th>
+                        </tr>
+                        </thead>
+                        <tbody id="lista-ganhos"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+<script>
+    const themeButton = document.getElementById("theme-toggle");
+    const themeLabel = document.getElementById("theme-label");
+    const formulario = document.querySelector("#form-ganho");
 
-                <section class="overview" aria-label="Resumo dos ganhos">
-                    <div class="monthly-total">
-                        <span class="section-label">Total registrado no mês</span>
-                        <strong id="total-geral">Carregando...</strong>
+    const formatarMoeda = valor =>
+        valor.toLocaleString("pt-BR", {style: "currency", currency: "BRL"});
 
-                        <span class="total-caption" id="quantidade-ganhos">2 lançamentos</span>
-                    </div>
-                    <div class="platform-list" id="relatorios">
-                        <h2>Por aplicativo</h2>
-                        <div class="platform-row"><span>99</span><strong id="total-99">R$ 1.098,00</strong></div>
-                        <div class="platform-row"><span>iFood</span><strong id="total-ifood">R$ 0,00</strong></div>
-                        <div class="platform-row"><span>Uber Driver</span><strong id="total-uber">R$ 0,00</strong></div>
-                    </div>
-                </section>
+    formulario.addEventListener("submit", async evento => {
+        evento.preventDefault();
 
-                <section class="transactions" id="lancamentos">
-                    <div class="section-heading">
-                        <div>
-                            <h2>Lançamentos recentes</h2>
-                            <p>Registros feitos no aplicativo</p>
-                        </div>
-                        <span class="count">2 registros</span>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Aplicativo</th>
-                                    <th>ID</th>
-                                    <th class="amount">Valor</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+        const novoGanho = {
+            valor: Number(document.querySelector("#valor").value),
+            plataforma: document.querySelector("#plataforma").value,
+            data: document.querySelector("#data").value
+        };
 
-                            <tbody id="lista-ganhos"></tbody>
+        try {
+            const resposta = await fetch("/api/ganhos", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(novoGanho)
+            });
 
+            if (!resposta.ok) {
+                throw new Error("A API não conseguiu salvar o ganho.");
+            }
 
-                            </tbody>
-                        </table>
-                    </div>
-                    <p class="demo-note">Dados de demonstração. A tela ainda não está conectada ao banco.</p>
-                </section>
-            </div>
-        </main>
-    </div>
-    <script>
-        const themeButton = document.getElementById("theme-toggle");
-        const themeLabel = document.getElementById("theme-label");
-        async function carregarGanhos() {
-            const resposta = await fetch("/api/ganhos");
-            const ganhos = await resposta.json();
-            const total = ganhos.reduce((soma, ganho) => soma + Number(ganho.valor), 0);
-const formatarMoeda = valor =>
-    valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+            formulario.reset();
+            await carregarGanhos();
+        } catch (erro) {
+            console.error(erro);
+            alert("Não foi possível salvar. Confira o Console e o backend.");
+        }
+    });
 
-const somarPlataforma = plataforma =>
-    ganhos
-        .filter(ganho => ganho.plataforma === plataforma)
-        .reduce((soma, ganho) => soma + Number(ganho.valor), 0);
+    async function carregarGanhos() {
+        const resposta = await fetch("/api/ganhos");
+        const ganhos = await resposta.json();
+        const total = ganhos.reduce((soma, ganho) => soma + Number(ganho.valor), 0);
+        const somarPlataforma = plataforma =>
+            ganhos
+                .filter(ganho => ganho.plataforma === plataforma)
+                .reduce((soma, ganho) => soma + Number(ganho.valor), 0);
 
-document.querySelector("#total-99").textContent =
-    formatarMoeda(somarPlataforma("99"));
+        document.querySelector("#total-99").textContent =
+            formatarMoeda(somarPlataforma("99"));
 
-document.querySelector("#total-ifood").textContent =
-    formatarMoeda(somarPlataforma("iFood"));
+        document.querySelector("#total-ifood").textContent =
+            formatarMoeda(somarPlataforma("iFood"));
 
-document.querySelector("#total-uber").textContent =
-    formatarMoeda(somarPlataforma("Uber Driver"));
-            document.querySelector("#total-geral").textContent =
-                total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        document.querySelector("#total-uber").textContent =
+            formatarMoeda(somarPlataforma("Uber Driver"));
+        document.querySelector("#total-geral").textContent = formatarMoeda(total);
 
-            document.querySelector("#quantidade-ganhos").textContent =
-                `${ganhos.length} lançamentos`;
-            const tabela = document.querySelector("#lista-ganhos");
+        document.querySelector("#quantidade-ganhos").textContent =
+            `${ganhos.length} lançamentos`;
+        document.querySelector("#contagem-registros").textContent =
+            `${ganhos.length} registros`;
+        const tabela = document.querySelector("#lista-ganhos");
+        tabela.innerHTML = "";
 
-            ganhos.forEach(ganho => {
-                const linha = document.createElement("tr");
+        ganhos.forEach(ganho => {
+            const linha = document.createElement("tr");
 
-                linha.innerHTML = `
+            linha.innerHTML = `
             <td>${ganho.data}</td>
             <td>${ganho.plataforma}</td>
             <td class="record-id">${ganho.id}</td>
-            <td class="amount">${ganho.valor}</td>
+            <td class="amount">${formatarMoeda(Number(ganho.valor))}</td>
         `;
 
-                tabela.appendChild(linha);
-            });
-        }
-
-        carregarGanhos();
-
-        function setTheme(theme) {
-            const dark = theme === "dark";
-            document.documentElement.dataset.theme = dark ? "dark" : "light";
-            themeButton.setAttribute("aria-pressed", String(dark));
-            themeLabel.textContent = dark ? "Modo claro" : "Modo escuro";
-            document.querySelector('meta[name="theme-color"]').content = dark ? "#171a18" : "#f2f3ef";
-        }
-
-        setTheme(localStorage.getItem("financas-theme") || "light");
-        themeButton.addEventListener("click", () => {
-            const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-            localStorage.setItem("financas-theme", nextTheme);
-            setTheme(nextTheme);
+            tabela.appendChild(linha);
         });
-    </script>
+    }
+
+    carregarGanhos();
+
+    function setTheme(theme) {
+        const dark = theme === "dark";
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+        themeButton.setAttribute("aria-pressed", String(dark));
+        themeLabel.textContent = dark ? "Modo claro" : "Modo escuro";
+        document.querySelector('meta[name="theme-color"]').content = dark ? "#171a18" : "#f2f3ef";
+    }
+
+    setTheme(localStorage.getItem("financas-theme") || "light");
+    themeButton.addEventListener("click", () => {
+        const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+        localStorage.setItem("financas-theme", nextTheme);
+        setTheme(nextTheme);
+    });
+</script>
 </body>
 
 </html>

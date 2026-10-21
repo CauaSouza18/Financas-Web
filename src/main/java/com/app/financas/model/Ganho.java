@@ -2,6 +2,8 @@ package com.app.financas.model;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public class Ganho {
     private int id;
     private double valor;
@@ -13,7 +15,12 @@ public class Ganho {
     public String getPlataforma() {
         return plataforma;
     }
+    @JsonCreator
+    public Ganho() {
+
+    }
     public Ganho(int id, double valor, String plataforma, LocalDate data) {
+
         this.id = id;
         this.valor = valor;
         this.plataforma = plataforma;
