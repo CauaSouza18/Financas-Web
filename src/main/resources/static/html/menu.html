@@ -38,7 +38,10 @@
                     <h1>Ganhos</h1>
                     <p class="subtitle">Acompanhe o que entrou em cada aplicativo.</p>
                 </div>
-                <div class="period-label">Outubro de 2026</div>
+                <label class="period-label">
+                    <span class="sr-only">Mês exibido</span>
+                    <input id="filtro-mes" type="month" required>
+                </label>
             </section>
 
             <section class="overview" aria-label="Resumo dos ganhos">
@@ -46,13 +49,13 @@
                     <span class="section-label">Total registrado no mês</span>
                     <strong id="total-geral">Carregando...</strong>
 
-                    <span class="total-caption" id="quantidade-ganhos">2 lançamentos</span>
+                    <span class="total-caption" id="quantidade-ganhos">&nbsp;</span>
                 </div>
                 <div class="platform-list" id="relatorios">
                     <h2>Por aplicativo</h2>
-                    <div class="platform-row"><span>99</span><strong id="total-99">R$ 1.098,00</strong></div>
-                    <div class="platform-row"><span>iFood</span><strong id="total-ifood">R$ 0,00</strong></div>
-                    <div class="platform-row"><span>Uber Driver</span><strong id="total-uber">R$ 0,00</strong></div>
+                    <div class="platform-row"><span>99</span><strong id="total-99">—</strong></div>
+                    <div class="platform-row"><span>iFood</span><strong id="total-ifood">—</strong></div>
+                    <div class="platform-row"><span>Uber Driver</span><strong id="total-uber">—</strong></div>
                 </div>
             </section>
             <section class="transactions">
@@ -79,7 +82,7 @@
             <section class="transactions" id="lancamentos">
                 <div class="section-heading">
                     <div>
-                        <h2>Lançamentos recentes</h2>
+                        <h2>Lançamentos do mês</h2>
                         <p>Registros feitos no aplicativo</p>
                     </div>
                     <span class="count" id="contagem-registros">Carregando...</span>
@@ -105,9 +108,28 @@
     const themeButton = document.getElementById("theme-toggle");
     const themeLabel = document.getElementById("theme-label");
     const formulario = document.querySelector("#form-ganho");
+    const filtroMes = document.querySelector("#filtro-mes");
+    const tabela = document.querySelector("#lista-ganhos");
 
     const formatarMoeda = valor =>
         valor.toLocaleString("pt-BR", {style: "currency", currency: "BRL"});
+
+    const doisDigitos = numero => String(numero).padStart(2, "0");
+
+    // Mês atual pelo relógio local (toISOString usaria UTC e viraria o dia depois das 21h no Brasil)
+    function mesAtual() {
+        const hoje = new Date();
+        return `${hoje.getFullYear()}-${doisDigitos(hoje.getMonth() + 1)}`;
+    }
+
+    function periodoDoMes(anoMes) {
+        const [ano, mes] = anoMes.split("-").map(Number);
+        const ultimoDia = new Date(ano, mes, 0).getDate();
+        return {
+            inicio: `${anoMes}-01`,
+            fim: `${anoMes}-${doisDigitos(ultimoDia)}`
+        };
+    }
 
     formulario.addEventListener("submit", async evento => {
         evento.preventDefault();
@@ -137,8 +159,17 @@
         }
     });
 
+    filtroMes.addEventListener("change", () => {
+        if (filtroMes.value) carregarGanhos();
+    });
+
     async function carregarGanhos() {
-        const resposta = await fetch("/api/ganhos");
+        const { inicio, fim } = periodoDoMes(filtroMes.value);
+        const resposta = await fetch(`/api/ganhos?inicio=${inicio}&fim=${fim}`);
+        if (!resposta.ok) {
+            console.error("Falha ao carregar ganhos:", resposta.status);
+            return;
+        }
         const ganhos = await resposta.json();
         const total = ganhos.reduce((soma, ganho) => soma + Number(ganho.valor), 0);
         const somarPlataforma = plataforma =>
@@ -157,11 +188,15 @@
         document.querySelector("#total-geral").textContent = formatarMoeda(total);
 
         document.querySelector("#quantidade-ganhos").textContent =
-            `${ganhos.length} lançamentos`;
+            ganhos.length === 1 ? "1 lançamento" : `${ganhos.length} lançamentos`;
         document.querySelector("#contagem-registros").textContent =
-            `${ganhos.length} registros`;
-        const tabela = document.querySelector("#lista-ganhos");
+            ganhos.length === 1 ? "1 registro" : `${ganhos.length} registros`;
         tabela.innerHTML = "";
+
+        if (ganhos.length === 0) {
+            tabela.innerHTML = `<tr><td class="empty-row" colspan="4">Nenhum ganho registrado neste mês.</td></tr>`;
+            return;
+        }
 
         ganhos.forEach(ganho => {
             const linha = document.createElement("tr");
@@ -177,6 +212,7 @@
         });
     }
 
+    filtroMes.value = mesAtual();
     carregarGanhos();
 
     function setTheme(theme) {
