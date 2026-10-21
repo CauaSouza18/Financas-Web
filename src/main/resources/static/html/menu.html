@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f2f3ef">
+    <meta name="theme-color" content="#f3f7f4">
     <title>Ganhos | Finanças</title>
-    <link rel="stylesheet" href="../css/menu.css">
+    <link rel="stylesheet" href="../css/menu.css?v=20261021.2">
+    <script src="../js/menu.js?v=20261021.2" defer></script>
 </head>
 
 <body>
@@ -14,9 +15,22 @@
     <aside class="sidebar">
         <a class="brand" href="#inicio"><span class="brand-mark">F</span><span>Finanças</span></a>
         <nav aria-label="Menu principal">
-            <a class="nav-item active" href="#inicio">Visão geral</a>
-            <a class="nav-item" href="#lancamentos">Lançamentos</a>
-            <a class="nav-item" href="#relatorios">Relatórios</a>
+            <a class="nav-item active" href="#inicio">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg>
+                <span>Visão geral</span>
+            </a>
+            <a class="nav-item" href="#secao-form">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>Novo ganho</span>
+            </a>
+            <a class="nav-item" href="#lancamentos">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4.5h12a1.5 1.5 0 0 1 1.5 1.5v13.5L15 16.5l-3 3-3-3-4.5 3V6A1.5 1.5 0 0 1 6 4.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 8.5h8M8 11.5h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span>Lançamentos</span>
+            </a>
+            <a class="nav-item" href="#relatorios">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 19.5h15M7 16v-4M12 16V7M17 16v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>Relatórios</span>
+            </a>
         </nav>
         <a class="logout" href="login.html">Sair da conta</a>
     </aside>
@@ -34,12 +48,11 @@
         <div class="page-content">
             <section class="page-heading">
                 <div>
-                    <p class="eyebrow">RESUMO</p>
                     <h1>Ganhos</h1>
                     <p class="subtitle">Acompanhe o que entrou em cada aplicativo.</p>
                 </div>
                 <label class="period-label">
-                    <span class="sr-only">Mês exibido</span>
+                    <span class="period-caption">Mês</span>
                     <input id="filtro-mes" type="month" required>
                 </label>
             </section>
@@ -53,43 +66,78 @@
                 </div>
                 <div class="platform-list" id="relatorios">
                     <h2>Por aplicativo</h2>
-                    <div class="platform-row"><span>99</span><strong id="total-99">—</strong></div>
-                    <div class="platform-row"><span>iFood</span><strong id="total-ifood">—</strong></div>
-                    <div class="platform-row"><span>Uber Driver</span><strong id="total-uber">—</strong></div>
+                    <div class="platform-row">
+                        <span class="app-name"><img class="app-logo app-logo--99" src="../images/apps/99food.png" alt="" aria-hidden="true" width="28" height="28"><span>99</span></span>
+                        <span class="share" id="parte-99"></span>
+                        <strong id="total-99">—</strong>
+                    </div>
+                    <div class="platform-row">
+                        <span class="app-name"><img class="app-logo app-logo--ifood" src="../images/apps/ifood.png" alt="" aria-hidden="true" width="28" height="28"><span>iFood</span></span>
+                        <span class="share" id="parte-ifood"></span>
+                        <strong id="total-ifood">—</strong>
+                    </div>
+                    <div class="platform-row">
+                        <span class="app-name"><img class="app-logo app-logo--uber" src="../images/apps/uber.png" alt="" aria-hidden="true" width="28" height="28"><span>Uber Driver</span></span>
+                        <span class="share" id="parte-uber"></span>
+                        <strong id="total-uber">—</strong>
+                    </div>
                 </div>
             </section>
-            <section class="transactions">
+            <section class="transactions" id="secao-form">
                 <div class="section-heading">
                     <div>
-                        <h2 id="titulo-form">Adicionar ganho</h2>
-                        <p>Informe o valor, o aplicativo e o dia do ganho</p>
+                        <h2 id="titulo-form">Novo ganho</h2>
+                        <p id="descricao-form">Registre quanto entrou, de qual aplicativo e em que dia</p>
                     </div>
                 </div>
 
                 <form id="form-ganho" class="entry-form">
-                    <div class="field">
-                        <label for="valor">Valor (R$)</label>
-                        <input id="valor" type="number" min="0.01" step="0.01" placeholder="0,00" required>
+                    <div class="entry-main">
+                        <div class="field">
+                            <label for="valor">Valor recebido</label>
+                            <div class="money-input">
+                                <span aria-hidden="true">R$</span>
+                                <input id="valor" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="0,00" required>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-head">
+                                <label for="data">Data</label>
+                                <div class="quick-dates">
+                                    <button type="button" data-dias-atras="0">Hoje</button>
+                                    <button type="button" data-dias-atras="1">Ontem</button>
+                                </div>
+                            </div>
+                            <input id="data" type="date" required>
+                        </div>
                     </div>
 
-                    <div class="field">
-                        <label for="plataforma">Aplicativo</label>
-                        <select id="plataforma" required>
-                            <option value="">Selecione</option>
-                            <option value="99">99</option>
-                            <option value="iFood">iFood</option>
-                            <option value="Uber Driver">Uber Driver</option>
-                        </select>
-                    </div>
+                    <fieldset class="field app-picker">
+                        <legend>Aplicativo</legend>
+                        <label class="app-option">
+                            <input type="radio" name="plataforma" value="99" required>
+                            <img class="app-logo app-logo--form app-logo--99" src="../images/apps/99food.png" alt="" aria-hidden="true" width="40" height="40">
+                            <span class="app-text"><strong>99</strong><small>Corridas</small></span>
+                            <span class="app-check" aria-hidden="true"></span>
+                        </label>
+                        <label class="app-option">
+                            <input type="radio" name="plataforma" value="iFood">
+                            <img class="app-logo app-logo--form app-logo--ifood" src="../images/apps/ifood.png" alt="" aria-hidden="true" width="40" height="40">
+                            <span class="app-text"><strong>iFood</strong><small>Entregas</small></span>
+                            <span class="app-check" aria-hidden="true"></span>
+                        </label>
+                        <label class="app-option">
+                            <input type="radio" name="plataforma" value="Uber Driver">
+                            <img class="app-logo app-logo--form app-logo--uber" src="../images/apps/uber.png" alt="" aria-hidden="true" width="40" height="40">
+                            <span class="app-text"><strong>Uber Driver</strong><small>Corridas</small></span>
+                            <span class="app-check" aria-hidden="true"></span>
+                        </label>
+                    </fieldset>
 
-                    <div class="field">
-                        <label for="data">Data</label>
-                        <input id="data" type="date" required>
-                    </div>
-
-                    <div class="form-actions">
-                        <button class="button button-primary" id="botao-salvar" type="submit">Salvar ganho</button>
+                    <div class="form-footer">
                         <button class="button" id="botao-cancelar" type="button" hidden>Cancelar</button>
+                        <button class="button button-primary" id="botao-salvar" type="submit">Salvar ganho</button>
                     </div>
                 </form>
             </section>
@@ -107,7 +155,7 @@
                         <tr>
                             <th>Data</th>
                             <th>Aplicativo</th>
-                            <th>ID</th>
+                            <th class="record-id">ID</th>
                             <th class="amount">Valor</th>
                             <th class="actions"><span class="sr-only">Ações</span></th>
                         </tr>
@@ -119,205 +167,6 @@
         </div>
     </main>
 </div>
-<script>
-    const themeButton = document.getElementById("theme-toggle");
-    const themeLabel = document.getElementById("theme-label");
-    const formulario = document.querySelector("#form-ganho");
-    const filtroMes = document.querySelector("#filtro-mes");
-    const botaoSalvar = document.querySelector("#botao-salvar");
-    const botaoCancelar = document.querySelector("#botao-cancelar");
-    const tituloForm = document.querySelector("#titulo-form");
-    const tabela = document.querySelector("#lista-ganhos");
-
-    // Ganhos do mês exibido, para preencher o formulário ao editar
-    let ganhosDoMes = [];
-    let idEmEdicao = null;
-
-    const formatarMoeda = valor =>
-        valor.toLocaleString("pt-BR", {style: "currency", currency: "BRL"});
-
-    // "2026-10-05" -> "05/10/2026". Não usa new Date() para não deslocar o dia pelo fuso horário.
-    const formatarData = dataIso => {
-        const [ano, mes, dia] = dataIso.split("-");
-        return `${dia}/${mes}/${ano}`;
-    };
-
-    const doisDigitos = numero => String(numero).padStart(2, "0");
-
-    // Mês atual pelo relógio local (toISOString usaria UTC e viraria o dia depois das 21h no Brasil)
-    function mesAtual() {
-        const hoje = new Date();
-        return `${hoje.getFullYear()}-${doisDigitos(hoje.getMonth() + 1)}`;
-    }
-
-    function periodoDoMes(anoMes) {
-        const [ano, mes] = anoMes.split("-").map(Number);
-        const ultimoDia = new Date(ano, mes, 0).getDate();
-        return {
-            inicio: `${anoMes}-01`,
-            fim: `${anoMes}-${doisDigitos(ultimoDia)}`
-        };
-    }
-
-    function iniciarEdicao(ganho) {
-        idEmEdicao = ganho.id;
-        document.querySelector("#valor").value = ganho.valor;
-        document.querySelector("#plataforma").value = ganho.plataforma;
-        document.querySelector("#data").value = ganho.data;
-        tituloForm.textContent = `Editar ganho #${ganho.id}`;
-        botaoSalvar.textContent = "Atualizar ganho";
-        botaoCancelar.hidden = false;
-        formulario.scrollIntoView({ block: "center" });
-        document.querySelector("#valor").focus();
-    }
-
-    function encerrarEdicao() {
-        idEmEdicao = null;
-        formulario.reset();
-        tituloForm.textContent = "Adicionar ganho";
-        botaoSalvar.textContent = "Salvar ganho";
-        botaoCancelar.hidden = true;
-    }
-
-    botaoCancelar.addEventListener("click", encerrarEdicao);
-
-    formulario.addEventListener("submit", async evento => {
-        evento.preventDefault();
-
-        const ganho = {
-            valor: Number(document.querySelector("#valor").value),
-            plataforma: document.querySelector("#plataforma").value,
-            data: document.querySelector("#data").value
-        };
-        const editando = idEmEdicao !== null;
-
-        try {
-            const resposta = await fetch(editando ? `/api/ganhos/${idEmEdicao}` : "/api/ganhos", {
-                method: editando ? "PUT" : "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(ganho)
-            });
-
-            if (!resposta.ok) {
-                throw new Error("A API não conseguiu salvar o ganho.");
-            }
-
-            encerrarEdicao();
-            await carregarGanhos();
-        } catch (erro) {
-            console.error(erro);
-            alert("Não foi possível salvar. Confira o Console e o backend.");
-        }
-    });
-
-    async function excluirGanho(ganho) {
-        const confirmado = confirm(
-            `Excluir o ganho de ${formatarMoeda(Number(ganho.valor))} (${ganho.plataforma}) de ${formatarData(ganho.data)}?`
-        );
-        if (!confirmado) return;
-
-        try {
-            const resposta = await fetch(`/api/ganhos/${ganho.id}`, { method: "DELETE" });
-            if (!resposta.ok) {
-                throw new Error("A API não conseguiu excluir o ganho.");
-            }
-            if (idEmEdicao === ganho.id) encerrarEdicao();
-            await carregarGanhos();
-        } catch (erro) {
-            console.error(erro);
-            alert("Não foi possível excluir. Confira o Console e o backend.");
-        }
-    }
-
-    tabela.addEventListener("click", evento => {
-        const botao = evento.target.closest("button[data-acao]");
-        if (!botao) return;
-
-        const ganho = ganhosDoMes.find(g => g.id === Number(botao.dataset.id));
-        if (!ganho) return;
-
-        if (botao.dataset.acao === "editar") iniciarEdicao(ganho);
-        if (botao.dataset.acao === "excluir") excluirGanho(ganho);
-    });
-
-    filtroMes.addEventListener("change", () => {
-        if (filtroMes.value) carregarGanhos();
-    });
-
-    async function carregarGanhos() {
-        const { inicio, fim } = periodoDoMes(filtroMes.value);
-        const resposta = await fetch(`/api/ganhos?inicio=${inicio}&fim=${fim}`);
-        if (!resposta.ok) {
-            console.error("Falha ao carregar ganhos:", resposta.status);
-            return;
-        }
-        const ganhos = await resposta.json();
-        ganhosDoMes = ganhos;
-        const total = ganhos.reduce((soma, ganho) => soma + Number(ganho.valor), 0);
-        const somarPlataforma = plataforma =>
-            ganhos
-                .filter(ganho => ganho.plataforma === plataforma)
-                .reduce((soma, ganho) => soma + Number(ganho.valor), 0);
-
-        document.querySelector("#total-99").textContent =
-            formatarMoeda(somarPlataforma("99"));
-
-        document.querySelector("#total-ifood").textContent =
-            formatarMoeda(somarPlataforma("iFood"));
-
-        document.querySelector("#total-uber").textContent =
-            formatarMoeda(somarPlataforma("Uber Driver"));
-        document.querySelector("#total-geral").textContent = formatarMoeda(total);
-
-        document.querySelector("#quantidade-ganhos").textContent =
-            ganhos.length === 1 ? "1 lançamento" : `${ganhos.length} lançamentos`;
-        document.querySelector("#contagem-registros").textContent =
-            ganhos.length === 1 ? "1 registro" : `${ganhos.length} registros`;
-        tabela.innerHTML = "";
-
-        if (ganhos.length === 0) {
-            tabela.innerHTML = `<tr><td class="empty-row" colspan="5">Nenhum ganho registrado neste mês.</td></tr>`;
-            return;
-        }
-
-        ganhos.forEach(ganho => {
-            const linha = document.createElement("tr");
-
-            linha.innerHTML = `
-            <td>${formatarData(ganho.data)}</td>
-            <td></td>
-            <td class="record-id">${ganho.id}</td>
-            <td class="amount">${formatarMoeda(Number(ganho.valor))}</td>
-            <td class="actions">
-                <button class="row-button" type="button" data-acao="editar" data-id="${ganho.id}">Editar</button>
-                <button class="row-button danger" type="button" data-acao="excluir" data-id="${ganho.id}">Excluir</button>
-            </td>
-        `;
-            // textContent para o nome do aplicativo não ser interpretado como HTML
-            linha.children[1].textContent = ganho.plataforma;
-
-            tabela.appendChild(linha);
-        });
-    }
-
-    filtroMes.value = mesAtual();
-    carregarGanhos();
-
-    function setTheme(theme) {
-        const dark = theme === "dark";
-        document.documentElement.dataset.theme = dark ? "dark" : "light";
-        themeButton.setAttribute("aria-pressed", String(dark));
-        themeLabel.textContent = dark ? "Modo claro" : "Modo escuro";
-        document.querySelector('meta[name="theme-color"]').content = dark ? "#171a18" : "#f2f3ef";
-    }
-
-    setTheme(localStorage.getItem("financas-theme") || "light");
-    themeButton.addEventListener("click", () => {
-        const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-        localStorage.setItem("financas-theme", nextTheme);
-        setTheme(nextTheme);
-    });
-</script>
 </body>
 
 </html>
