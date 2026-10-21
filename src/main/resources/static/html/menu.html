@@ -59,24 +59,37 @@
                 </div>
             </section>
             <section class="transactions">
-                <h2>Adicionar ganho</h2>
+                <div class="section-heading">
+                    <div>
+                        <h2>Adicionar ganho</h2>
+                        <p>Informe o valor, o aplicativo e o dia do ganho</p>
+                    </div>
+                </div>
 
-                <form id="form-ganho">
-                    <label for="valor">Valor</label>
-                    <input id="valor" type="number" min="0.01" step="0.01" required>
+                <form id="form-ganho" class="entry-form">
+                    <div class="field">
+                        <label for="valor">Valor (R$)</label>
+                        <input id="valor" type="number" min="0.01" step="0.01" placeholder="0,00" required>
+                    </div>
 
-                    <label for="plataforma">Aplicativo</label>
-                    <select id="plataforma" required>
-                        <option value="">Selecione</option>
-                        <option value="99">99</option>
-                        <option value="iFood">iFood</option>
-                        <option value="Uber Driver">Uber Driver</option>
-                    </select>
+                    <div class="field">
+                        <label for="plataforma">Aplicativo</label>
+                        <select id="plataforma" required>
+                            <option value="">Selecione</option>
+                            <option value="99">99</option>
+                            <option value="iFood">iFood</option>
+                            <option value="Uber Driver">Uber Driver</option>
+                        </select>
+                    </div>
 
-                    <label for="data">Data</label>
-                    <input id="data" type="date" required>
+                    <div class="field">
+                        <label for="data">Data</label>
+                        <input id="data" type="date" required>
+                    </div>
 
-                    <button type="submit">Salvar ganho</button>
+                    <div class="form-actions">
+                        <button class="button button-primary" type="submit">Salvar ganho</button>
+                    </div>
                 </form>
             </section>
             <section class="transactions" id="lancamentos">
@@ -113,6 +126,12 @@
 
     const formatarMoeda = valor =>
         valor.toLocaleString("pt-BR", {style: "currency", currency: "BRL"});
+
+    // "2026-10-05" -> "05/10/2026". Não usa new Date() para não deslocar o dia pelo fuso horário.
+    const formatarData = dataIso => {
+        const [ano, mes, dia] = dataIso.split("-");
+        return `${dia}/${mes}/${ano}`;
+    };
 
     const doisDigitos = numero => String(numero).padStart(2, "0");
 
@@ -202,7 +221,7 @@
             const linha = document.createElement("tr");
 
             linha.innerHTML = `
-            <td>${ganho.data}</td>
+            <td>${formatarData(ganho.data)}</td>
             <td>${ganho.plataforma}</td>
             <td class="record-id">${ganho.id}</td>
             <td class="amount">${formatarMoeda(Number(ganho.valor))}</td>
