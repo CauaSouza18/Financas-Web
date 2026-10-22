@@ -2,13 +2,18 @@ package com.app.financas.controller;
 
 import com.app.financas.dao.UsuarioDAO;
 import com.app.financas.model.Usuario;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.Map;
 
 import java.sql.SQLException;
 
+///
 @RestController
 @RequestMapping("/api")
 public class AuthController {
@@ -46,6 +51,32 @@ public class AuthController {
         } catch (SQLException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Erro ao acessar o banco de dados");
+        }
+    }
+
+    public record LoginRequest(String email, String senha) {
+    }
+
+    @PostMapping("/login")
+    public Map<String, String> login(@RequestBody LoginRequest dados, HttpSession sessao) {
+        if (dados.email() == null || dados.email().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o email");
+        }
+
+        if (dados.senha() == null || dados.senha().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a senha");
+        }
+
+        try {
+            Usuario usuario = usuarioDAO.buscarPorEmail(dados.email().trim().toLowerCase());
+            if (usuario == null || !encoder.matches(dados.senha(), usuario.getSenhaHash())) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "E-mail ou senha inválidos");
+            }
+            sessao.setAttribute("usuarioId", usuario.getId());
+            return Map.of("nome", usuario.getNome());
+
+        } catch (SQLException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao acessar o banco de dados");
         }
     }
 }
