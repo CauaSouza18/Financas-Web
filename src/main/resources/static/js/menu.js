@@ -10,8 +10,17 @@ const descricaoForm = document.querySelector("#descricao-form");
 const secaoForm = document.querySelector("#secao-form");
 const campoData = document.querySelector("#data");
 const tabela = document.querySelector("#lista-ganhos");
+const formularioDespesa = document.querySelector("#form-despesa");
+const campoDataDespesa = document.querySelector("#data-despesa");
+const botaoSalvarDespesa = document.querySelector("#botao-salvar-despesa");
+const botaoCancelarDespesa = document.querySelector("#botao-cancelar-despesa");
+const tituloFormDespesa = document.querySelector("#titulo-form-despesa");
+const descricaoFormDespesa = document.querySelector("#descricao-form-despesa");
+const secaoFormDespesa = document.querySelector("#secao-despesas");
+const tabelaDespesas = document.querySelector("#lista-despesas");
 
 const DESCRICAO_PADRAO = descricaoForm.textContent;
+const DESCRICAO_PADRAO_DESPESA = descricaoFormDespesa.textContent;
 
 function redirecionarSeNaoAutorizado(resposta) {
     if (resposta.status === 401) {
@@ -54,7 +63,9 @@ function criarIdentificacaoApp(plataforma) {
 
 // Ganhos do mês exibido, para preencher o formulário ao editar
 let ganhosDoMes = [];
+let despesasDoMes = [];
 let idEmEdicao = null;
+let idDespesaEmEdicao = null;
 
 const formatarMoeda = valor =>
     valor.toLocaleString("pt-BR", {style: "currency", currency: "BRL"});
@@ -141,6 +152,41 @@ function encerrarEdicao() {
 
 botaoCancelar.addEventListener("click", encerrarEdicao);
 
+function marcarDespesaEmEdicao() {
+    tabelaDespesas.querySelectorAll("tr[data-id]").forEach(linha =>
+        linha.classList.toggle("is-editing", Number(linha.dataset.id) === idDespesaEmEdicao));
+}
+
+function iniciarEdicaoDespesa(despesa) {
+    idDespesaEmEdicao = despesa.id;
+    document.querySelector("#valor-despesa").value = Number(despesa.valor).toFixed(2);
+    document.querySelector("#categoria-despesa").value = despesa.categoria;
+    document.querySelector("#descricao-despesa").value = despesa.descricao || "";
+    campoDataDespesa.value = despesa.data;
+    tituloFormDespesa.textContent = "Editar despesa";
+    descricaoFormDespesa.textContent = `Lançamento #${despesa.id} · ${despesa.categoria} · ${formatarData(despesa.data)}`;
+    botaoSalvarDespesa.textContent = "Atualizar despesa";
+    botaoCancelarDespesa.hidden = false;
+    secaoFormDespesa.classList.add("is-editing");
+    marcarDespesaEmEdicao();
+    formularioDespesa.scrollIntoView({ block: "center" });
+    document.querySelector("#valor-despesa").focus({ preventScroll: true });
+}
+
+function encerrarEdicaoDespesa() {
+    idDespesaEmEdicao = null;
+    formularioDespesa.reset();
+    campoDataDespesa.value = hojeIso();
+    tituloFormDespesa.textContent = "Nova despesa";
+    descricaoFormDespesa.textContent = DESCRICAO_PADRAO_DESPESA;
+    botaoSalvarDespesa.textContent = "Salvar despesa";
+    botaoCancelarDespesa.hidden = true;
+    secaoFormDespesa.classList.remove("is-editing");
+    marcarDespesaEmEdicao();
+}
+
+botaoCancelarDespesa.addEventListener("click", encerrarEdicaoDespesa);
+
 linkSair.addEventListener("click", async evento => {
     evento.preventDefault();
 
@@ -179,7 +225,7 @@ formulario.addEventListener("submit", async evento => {
         encerrarEdicao();
         // Mostra o mês do ganho salvo, para ele não "sumir" se a data for de outro mês
         filtroMes.value = ganho.data.slice(0, 7);
-        await carregarGanhos();
+        await carregarLancamentos();
     } catch (erro) {
         console.error(erro);
         alert("Não foi possível salvar. Confira o Console e o backend.");
@@ -200,10 +246,61 @@ async function excluirGanho(ganho) {
             throw new Error("A API não conseguiu excluir o ganho.");
         }
         if (idEmEdicao === ganho.id) encerrarEdicao();
-        await carregarGanhos();
+        await carregarLancamentos();
     } catch (erro) {
         console.error(erro);
         alert("Não foi possível excluir. Confira o Console e o backend.");
+    }
+}
+
+formularioDespesa.addEventListener("submit", async evento => {
+    evento.preventDefault();
+
+    const despesa = {
+        valor: Number(document.querySelector("#valor-despesa").value),
+        categoria: document.querySelector("#categoria-despesa").value.trim(),
+        descricao: document.querySelector("#descricao-despesa").value.trim(),
+        data: campoDataDespesa.value
+    };
+    const editando = idDespesaEmEdicao !== null;
+
+    try {
+        const resposta = await fetch(editando ? `/api/despesas/${idDespesaEmEdicao}` : "/api/despesas", {
+            method: editando ? "PUT" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(despesa)
+        });
+        if (redirecionarSeNaoAutorizado(resposta)) return;
+        if (!resposta.ok) {
+            throw new Error("A API não conseguiu salvar a despesa.");
+        }
+
+        encerrarEdicaoDespesa();
+        filtroMes.value = despesa.data.slice(0, 7);
+        await carregarLancamentos();
+    } catch (erro) {
+        console.error(erro);
+        alert("Não foi possível salvar a despesa. Confira os dados e tente novamente.");
+    }
+});
+
+async function excluirDespesa(despesa) {
+    const confirmado = confirm(
+        `Excluir a despesa de ${formatarMoeda(Number(despesa.valor))} (${despesa.categoria}) de ${formatarData(despesa.data)}?`
+    );
+    if (!confirmado) return;
+
+    try {
+        const resposta = await fetch(`/api/despesas/${despesa.id}`, { method: "DELETE" });
+        if (redirecionarSeNaoAutorizado(resposta)) return;
+        if (!resposta.ok) {
+            throw new Error("A API não conseguiu excluir a despesa.");
+        }
+        if (idDespesaEmEdicao === despesa.id) encerrarEdicaoDespesa();
+        await carregarLancamentos();
+    } catch (erro) {
+        console.error(erro);
+        alert("Não foi possível excluir a despesa. Confira o Console.");
     }
 }
 
@@ -218,22 +315,54 @@ tabela.addEventListener("click", evento => {
     if (botao.dataset.acao === "excluir") excluirGanho(ganho);
 });
 
-filtroMes.addEventListener("change", () => {
-    if (filtroMes.value) carregarGanhos();
+tabelaDespesas.addEventListener("click", evento => {
+    const botao = evento.target.closest("button[data-acao]");
+    if (!botao) return;
+
+    const despesa = despesasDoMes.find(item => item.id === Number(botao.dataset.id));
+    if (!despesa) return;
+
+    if (botao.dataset.acao === "editar") iniciarEdicaoDespesa(despesa);
+    if (botao.dataset.acao === "excluir") excluirDespesa(despesa);
 });
 
-async function carregarGanhos() {
-    const { inicio, fim } = periodoDoMes(filtroMes.value);
-    const resposta = await fetch(`/api/ganhos?inicio=${inicio}&fim=${fim}`);
-    if (redirecionarSeNaoAutorizado(resposta)) return;
+filtroMes.addEventListener("change", () => {
+    if (filtroMes.value) carregarLancamentos();
+});
 
-    if (!resposta.ok) {
-        console.error("Falha ao carregar ganhos:", resposta.status);
+async function carregarLancamentos() {
+    const { inicio, fim } = periodoDoMes(filtroMes.value);
+    let ganhos;
+    let despesas;
+    try {
+        const respostaGanhos = await fetch(`/api/ganhos?inicio=${inicio}&fim=${fim}`);
+        if (redirecionarSeNaoAutorizado(respostaGanhos)) return;
+        if (!respostaGanhos.ok) {
+            console.error("Falha ao carregar ganhos:", respostaGanhos.status);
+            return;
+        }
+        ganhos = await respostaGanhos.json();
+
+        const respostaDespesas = await fetch(`/api/despesas?inicio=${inicio}&fim=${fim}`);
+        if (redirecionarSeNaoAutorizado(respostaDespesas)) return;
+        if (!respostaDespesas.ok) {
+            console.error("Falha ao carregar despesas:", respostaDespesas.status);
+            return;
+        }
+        despesas = await respostaDespesas.json();
+    } catch (erro) {
+        console.error("Falha ao carregar os lançamentos:", erro);
         return;
     }
-    const ganhos = await resposta.json();
+
     ganhosDoMes = ganhos;
-    const total = ganhos.reduce((soma, ganho) => soma + Number(ganho.valor), 0);
+    despesasDoMes = despesas;
+    const totalGanhos = ganhos.reduce((soma, ganho) => soma + Number(ganho.valor), 0);
+    const totalDespesas = despesas.reduce((soma, despesa) => soma + Number(despesa.valor), 0);
+    document.querySelector("#total-geral").textContent = formatarMoeda(totalGanhos - totalDespesas);
+    document.querySelector("#resumo-saldo").textContent =
+        `Ganhos ${formatarMoeda(totalGanhos)} · despesas ${formatarMoeda(totalDespesas)}`;
+
     const somarPlataforma = plataforma =>
         ganhos
             .filter(ganho => ganho.plataforma === plataforma)
@@ -243,29 +372,22 @@ async function carregarGanhos() {
         const valor = somarPlataforma(plataforma);
         document.querySelector(`#total-${chave}`).textContent = formatarMoeda(valor);
         document.querySelector(`#parte-${chave}`).textContent =
-            total > 0 ? `${Math.round(valor / total * 100)}%` : "";
+            totalGanhos > 0 ? `${Math.round(valor / totalGanhos * 100)}%` : "";
     });
-    document.querySelector("#total-geral").textContent = formatarMoeda(total);
 
-    const quantidade = ganhos.length === 1 ? "1 lançamento" : `${ganhos.length} lançamentos`;
-    document.querySelector("#quantidade-ganhos").textContent = ganhos.length === 0
-        ? "Nenhum lançamento"
-        : `${quantidade} · média de ${formatarMoeda(total / ganhos.length)}`;
     document.querySelector("#contagem-registros").textContent =
         ganhos.length === 1 ? "1 registro" : `${ganhos.length} registros`;
     tabela.innerHTML = "";
 
     if (ganhos.length === 0) {
         tabela.innerHTML = `<tr><td class="empty-row" colspan="5">Nenhum ganho registrado neste mês.</td></tr>`;
-        return;
-    }
+    } else {
+        ganhos.forEach(ganho => {
+            const linha = document.createElement("tr");
+            linha.dataset.id = ganho.id;
+            linha.classList.toggle("is-editing", ganho.id === idEmEdicao);
 
-    ganhos.forEach(ganho => {
-        const linha = document.createElement("tr");
-        linha.dataset.id = ganho.id;
-        linha.classList.toggle("is-editing", ganho.id === idEmEdicao);
-
-        linha.innerHTML = `
+            linha.innerHTML = `
         <td>${formatarData(ganho.data)}</td>
         <td class="platform-cell"></td>
         <td class="record-id">#${ganho.id}</td>
@@ -275,17 +397,46 @@ async function carregarGanhos() {
             <button class="row-button danger" type="button" data-acao="excluir" data-id="${ganho.id}">Excluir</button>
         </td>
     `;
-        // append de texto para o nome do aplicativo não ser interpretado como HTML
-        linha.querySelector(".platform-cell").append(criarIdentificacaoApp(ganho.plataforma));
+            // Insere o nome como texto para não interpretar conteúdo da API como HTML.
+            linha.querySelector(".platform-cell").append(criarIdentificacaoApp(ganho.plataforma));
 
-        tabela.appendChild(linha);
-    });
+            tabela.appendChild(linha);
+        });
+    }
+
+    document.querySelector("#contagem-despesas").textContent =
+        despesas.length === 1 ? "1 registro" : `${despesas.length} registros`;
+    tabelaDespesas.innerHTML = "";
+    if (despesas.length === 0) {
+        tabelaDespesas.innerHTML = `<tr><td class="empty-row" colspan="6">Nenhuma despesa registrada neste mês.</td></tr>`;
+    } else {
+        despesas.forEach(despesa => {
+            const linha = document.createElement("tr");
+            linha.dataset.id = despesa.id;
+            linha.classList.toggle("is-editing", despesa.id === idDespesaEmEdicao);
+            linha.innerHTML = `
+                <td>${formatarData(despesa.data)}</td>
+                <td class="expense-category"></td>
+                <td class="expense-description"></td>
+                <td class="record-id">#${despesa.id}</td>
+                <td class="amount">${formatarMoeda(Number(despesa.valor))}</td>
+                <td class="actions">
+                    <button class="row-button" type="button" data-acao="editar" data-id="${despesa.id}">Editar</button>
+                    <button class="row-button danger" type="button" data-acao="excluir" data-id="${despesa.id}">Excluir</button>
+                </td>
+            `;
+            linha.querySelector(".expense-category").textContent = despesa.categoria;
+            linha.querySelector(".expense-description").textContent = despesa.descricao || "—";
+            tabelaDespesas.appendChild(linha);
+        });
+    }
 }
 
 filtroMes.value = mesAtual();
 campoData.value = hojeIso();
+campoDataDespesa.value = hojeIso();
 marcarAtalhoData();
-carregarGanhos();
+carregarLancamentos();
 
 function setTheme(theme) {
     const dark = theme === "dark";

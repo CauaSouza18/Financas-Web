@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f3f7f4">
-    <title>Ganhos | Finanças</title>
-    <link rel="stylesheet" href="../css/menu.css?v=20261021.2">
-    <script src="../js/menu.js?v=20261024.1" defer></script>
+    <title>Resumo financeiro | Finanças</title>
+    <link rel="stylesheet" href="../css/menu.css?v=20261024.1">
+    <script src="../js/menu.js?v=20261024.2" defer></script>
 </head>
 
 <body>
@@ -27,6 +27,14 @@
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4.5h12a1.5 1.5 0 0 1 1.5 1.5v13.5L15 16.5l-3 3-3-3-4.5 3V6A1.5 1.5 0 0 1 6 4.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 8.5h8M8 11.5h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 <span>Lançamentos</span>
             </a>
+            <a class="nav-item" href="#secao-despesas">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>Nova despesa</span>
+            </a>
+            <a class="nav-item" href="#lancamentos-despesas">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>Despesas</span>
+            </a>
             <a class="nav-item" href="#relatorios">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 19.5h15M7 16v-4M12 16V7M17 16v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 <span>Relatórios</span>
@@ -38,7 +46,7 @@
     <main id="inicio">
         <header class="topbar">
             <span class="mobile-brand"><span class="brand-mark">F</span> Finanças</span>
-            <span class="topbar-label">Área do motorista</span>
+            <span class="topbar-label">Resumo financeiro</span>
             <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
                 <span aria-hidden="true">◐</span> <span id="theme-label">Modo escuro</span>
             </button>
@@ -48,8 +56,8 @@
         <div class="page-content">
             <section class="page-heading">
                 <div>
-                    <h1>Ganhos</h1>
-                    <p class="subtitle">Acompanhe o que entrou em cada aplicativo.</p>
+                    <h1>Resumo financeiro</h1>
+                    <p class="subtitle">Acompanhe seus ganhos, despesas e saldo mensal.</p>
                 </div>
                 <label class="period-label">
                     <span class="period-caption">Mês</span>
@@ -57,15 +65,14 @@
                 </label>
             </section>
 
-            <section class="overview" aria-label="Resumo dos ganhos">
+            <section class="overview" aria-label="Resumo financeiro do mês">
                 <div class="monthly-total">
-                    <span class="section-label">Total registrado no mês</span>
+                    <span class="section-label">Saldo do mês</span>
                     <strong id="total-geral">Carregando...</strong>
-
-                    <span class="total-caption" id="quantidade-ganhos">&nbsp;</span>
+                    <span class="total-caption" id="resumo-saldo">Calculando ganhos e despesas...</span>
                 </div>
                 <div class="platform-list" id="relatorios">
-                    <h2>Por aplicativo</h2>
+                    <h2>Ganhos por aplicativo</h2>
                     <div class="platform-row">
                         <span class="app-name"><img class="app-logo app-logo--99" src="../images/apps/99food.png" alt="" aria-hidden="true" width="28" height="28"><span>99</span></span>
                         <span class="share" id="parte-99"></span>
@@ -160,7 +167,69 @@
                             <th class="actions"><span class="sr-only">Ações</span></th>
                         </tr>
                         </thead>
-                        <tbody id="lista-ganhos"></tbody>
+                <tbody id="lista-ganhos"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="transactions" id="secao-despesas">
+                <div class="section-heading">
+                    <div>
+                        <h2 id="titulo-form-despesa">Nova despesa</h2>
+                        <p id="descricao-form-despesa">Anote seus gastos para acompanhar o saldo do mês</p>
+                    </div>
+                </div>
+
+                <form id="form-despesa" class="entry-form">
+                    <div class="entry-main expense-entry-main">
+                        <div class="field">
+                            <label for="valor-despesa">Valor</label>
+                            <div class="money-input">
+                                <span aria-hidden="true">R$</span>
+                                <input id="valor-despesa" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="0,00" required>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="categoria-despesa">Categoria</label>
+                            <input class="text-input" id="categoria-despesa" type="text" maxlength="100" placeholder="Ex.: combustível" required>
+                        </div>
+                        <div class="field">
+                            <label for="data-despesa">Data</label>
+                            <input class="text-input" id="data-despesa" type="date" required>
+                        </div>
+                        <div class="field expense-description-field">
+                            <label for="descricao-despesa">Descrição <span class="optional-label">(opcional)</span></label>
+                            <input class="text-input" id="descricao-despesa" type="text" maxlength="255" placeholder="Ex.: abastecimento no posto">
+                        </div>
+                    </div>
+                    <div class="form-footer">
+                        <button class="button" id="botao-cancelar-despesa" type="button" hidden>Cancelar</button>
+                        <button class="button button-primary" id="botao-salvar-despesa" type="submit">Salvar despesa</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="transactions" id="lancamentos-despesas">
+                <div class="section-heading">
+                    <div>
+                        <h2>Despesas do mês</h2>
+                        <p>Gastos registrados no período selecionado</p>
+                    </div>
+                    <span class="count" id="contagem-despesas">Carregando...</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Categoria</th>
+                            <th>Descrição</th>
+                            <th class="record-id">ID</th>
+                            <th class="amount">Valor</th>
+                            <th class="actions"><span class="sr-only">Ações</span></th>
+                        </tr>
+                        </thead>
+                        <tbody id="lista-despesas"></tbody>
                     </table>
                 </div>
             </section>

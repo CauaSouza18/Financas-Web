@@ -5,18 +5,21 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Conexao {
-    private static final String URL = "jdbc:mysql://localhost:3306/app_financas";
-    private static final String user = "root";
-    private static final String senha = "27870015";
-
     private static Connection conexao;
     public static Connection conectar() throws SQLException {
+        String url = System.getenv("DB_URL");
+        if (url == null) {
+            url = "jdbc:mysql://localhost:3306/app_financas";
+        }
+        String user = System.getenv("DB_USER");
+        String senha = System.getenv("DB_PASSWORD");
+
         if (conexao == null || conexao.isClosed()) {
-            conexao = DriverManager.getConnection(URL, user, senha);
+            conexao = DriverManager.getConnection(url, user, senha);
         }
         else if (!conexao.isValid(5)) {
             conexao.close();
-            conexao = DriverManager.getConnection(URL, user, senha);
+            conexao = DriverManager.getConnection(url, user, senha);
         }
         return conexao;
     }
