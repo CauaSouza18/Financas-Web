@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.app.financas.model.Despesa;
 
@@ -47,6 +49,26 @@ public class DespesaDAO {
             }
         }
         return despesas;
+    }
+
+    public Map<String, Double> totalPorCategoria(int usuarioId, LocalDate inicio, LocalDate fim)
+            throws SQLException {
+        String sql = "SELECT categoria, SUM(valor) FROM despesas "
+                + "WHERE usuario_id = ? AND data BETWEEN ? AND ? "
+                + "GROUP BY categoria ORDER BY SUM(valor) DESC, categoria";
+        Map<String, Double> totais = new LinkedHashMap<>();
+
+        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+            comando.setInt(1, usuarioId);
+            comando.setDate(2, java.sql.Date.valueOf(inicio));
+            comando.setDate(3, java.sql.Date.valueOf(fim));
+            try (ResultSet resultado = comando.executeQuery()) {
+                while (resultado.next()) {
+                    totais.put(resultado.getString("categoria"), resultado.getDouble(2));
+                }
+            }
+        }
+        return totais;
     }
 
     public boolean atualizar(Despesa despesa, int usuarioId) throws SQLException {

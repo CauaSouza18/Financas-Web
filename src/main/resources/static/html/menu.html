@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f3f7f4">
     <title>Resumo financeiro | Finanças</title>
-    <link rel="stylesheet" href="../css/menu.css?v=20261024.1">
-    <script src="../js/menu.js?v=20261024.2" defer></script>
+    <link rel="stylesheet" href="../css/menu.css?v=20261024.2">
+    <script src="../js/menu.js?v=20261024.3" defer></script>
 </head>
 
 <body>
@@ -71,7 +71,7 @@
                     <strong id="total-geral">Carregando...</strong>
                     <span class="total-caption" id="resumo-saldo">Calculando ganhos e despesas...</span>
                 </div>
-                <div class="platform-list" id="relatorios">
+                <div class="platform-list">
                     <h2>Ganhos por aplicativo</h2>
                     <div class="platform-row">
                         <span class="app-name"><img class="app-logo app-logo--99" src="../images/apps/99food.png" alt="" aria-hidden="true" width="28" height="28"><span>99</span></span>
@@ -88,6 +88,18 @@
                         <span class="share" id="parte-uber"></span>
                         <strong id="total-uber">—</strong>
                     </div>
+                </div>
+            </section>
+            <section class="transactions category-report" id="relatorios" aria-label="Despesas por categoria">
+                <div class="section-heading">
+                    <div>
+                        <h2>Despesas por categoria</h2>
+                        <p>Veja como os gastos do mês se distribuem</p>
+                    </div>
+                </div>
+                <div class="category-report-content">
+                    <p class="category-empty" id="mensagem-sem-despesas" hidden>Sem despesas neste mês</p>
+                    <div class="category-list" id="lista-categorias" aria-live="polite"></div>
                 </div>
             </section>
             <section class="transactions" id="secao-form">

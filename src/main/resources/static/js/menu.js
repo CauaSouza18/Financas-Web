@@ -330,6 +330,65 @@ filtroMes.addEventListener("change", () => {
     if (filtroMes.value) carregarLancamentos();
 });
 
+async function carregarCategorias() {
+    const { inicio, fim } = periodoDoMes(filtroMes.value);
+    const lista = document.querySelector("#lista-categorias");
+    const mensagemVazia = document.querySelector("#mensagem-sem-despesas");
+    lista.replaceChildren();
+    mensagemVazia.hidden = true;
+
+    try {
+        const resposta = await fetch(`/api/despesas/por-categoria?inicio=${inicio}&fim=${fim}`);
+        if (redirecionarSeNaoAutorizado(resposta)) return;
+        if (!resposta.ok) {
+            console.error("Falha ao carregar despesas por categoria:", resposta.status);
+            return;
+        }
+
+        const dados = await resposta.json();
+        const categorias = Object.entries(dados);
+        if (categorias.length === 0) {
+            mensagemVazia.hidden = false;
+            return;
+        }
+
+        const total = categorias.reduce((soma, [, valor]) => soma + Number(valor), 0);
+        categorias.forEach(([categoria, valorRecebido]) => {
+            const valor = Number(valorRecebido);
+            const porcentagem = total > 0 ? valor / total * 100 : 0;
+            const linha = document.createElement("div");
+            linha.className = "category-row";
+
+            const cabecalho = document.createElement("div");
+            cabecalho.className = "category-row-head";
+            const nome = document.createElement("span");
+            nome.className = "category-name";
+            nome.textContent = categoria;
+            const valorFormatado = document.createElement("strong");
+            valorFormatado.className = "category-value";
+            valorFormatado.textContent = formatarMoeda(valor);
+            cabecalho.append(nome, valorFormatado);
+
+            const trilho = document.createElement("div");
+            trilho.className = "category-track";
+            trilho.setAttribute("role", "progressbar");
+            trilho.setAttribute("aria-valuemin", "0");
+            trilho.setAttribute("aria-valuemax", "100");
+            trilho.setAttribute("aria-valuenow", String(porcentagem));
+            trilho.setAttribute("aria-label", `${categoria}: ${Math.round(porcentagem)}%`);
+            const barra = document.createElement("span");
+            barra.className = "category-bar";
+            barra.style.width = `${porcentagem}%`;
+            trilho.append(barra);
+
+            linha.append(cabecalho, trilho);
+            lista.append(linha);
+        });
+    } catch (erro) {
+        console.error("Falha ao carregar despesas por categoria:", erro);
+    }
+}
+
 async function carregarLancamentos() {
     const { inicio, fim } = periodoDoMes(filtroMes.value);
     let ganhos;
@@ -430,6 +489,8 @@ async function carregarLancamentos() {
             tabelaDespesas.appendChild(linha);
         });
     }
+
+    await carregarCategorias();
 }
 
 filtroMes.value = mesAtual();
