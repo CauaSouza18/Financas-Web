@@ -29,7 +29,7 @@
 		<section class="form-panel" aria-labelledby="login-title">
 			<h2 id="login-title">Bem-vindo de volta</h2>
 			<p>Entre na sua conta para continuar.</p>
-			<form action="#" method="post">
+			<form id="form-login" action="#" method="post">
 				<label for="email">E-mail</label>
 				<input id="email" name="email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required>
 				<label for="password">Senha</label>
@@ -38,10 +38,12 @@
 					<label class="remember"><input type="checkbox" name="remember"> Lembrar de mim</label>
 					<a href="#recuperar-senha">Esqueceu a senha?</a>
 				</div>
+				<p id="erro-login" hidden></p>
 				<button type="submit">Entrar na minha conta</button>
 			</form>
 			<p class="signup">Ainda não tem uma conta? <a href="#criar-conta">Criar conta</a></p>
 		</section>
 	</main>
+	<script src="../js/login.js" defer></script>
 </body>
 </html>

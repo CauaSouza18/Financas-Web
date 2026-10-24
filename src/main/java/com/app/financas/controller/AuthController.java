@@ -79,4 +79,9 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao acessar o banco de dados");
         }
     }
+
+    @PostMapping("/logout")
+    public void logout(HttpSession sessao) {
+        sessao.invalidate();
+    }
 }

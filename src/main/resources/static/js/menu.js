@@ -4,6 +4,7 @@ const formulario = document.querySelector("#form-ganho");
 const filtroMes = document.querySelector("#filtro-mes");
 const botaoSalvar = document.querySelector("#botao-salvar");
 const botaoCancelar = document.querySelector("#botao-cancelar");
+const linkSair = document.querySelector("#sair");
 const tituloForm = document.querySelector("#titulo-form");
 const descricaoForm = document.querySelector("#descricao-form");
 const secaoForm = document.querySelector("#secao-form");
@@ -11,6 +12,14 @@ const campoData = document.querySelector("#data");
 const tabela = document.querySelector("#lista-ganhos");
 
 const DESCRICAO_PADRAO = descricaoForm.textContent;
+
+function redirecionarSeNaoAutorizado(resposta) {
+    if (resposta.status === 401) {
+        window.location.href = "/html/login.html";
+        return true;
+    }
+    return false;
+}
 
 // Logos usados junto aos nomes dos aplicativos.
 const logoDoApp = {
@@ -132,6 +141,18 @@ function encerrarEdicao() {
 
 botaoCancelar.addEventListener("click", encerrarEdicao);
 
+linkSair.addEventListener("click", async evento => {
+    evento.preventDefault();
+
+    try {
+        await fetch("/api/logout", { method: "POST" });
+    } catch (erro) {
+        console.error("Falha ao encerrar sessão:", erro);
+    }
+
+    window.location.href = "/html/login.html";
+});
+
 formulario.addEventListener("submit", async evento => {
     evento.preventDefault();
 
@@ -148,6 +169,8 @@ formulario.addEventListener("submit", async evento => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(ganho)
         });
+
+        if (redirecionarSeNaoAutorizado(resposta)) return;
 
         if (!resposta.ok) {
             throw new Error("A API não conseguiu salvar o ganho.");
@@ -171,6 +194,8 @@ async function excluirGanho(ganho) {
 
     try {
         const resposta = await fetch(`/api/ganhos/${ganho.id}`, { method: "DELETE" });
+        if (redirecionarSeNaoAutorizado(resposta)) return;
+
         if (!resposta.ok) {
             throw new Error("A API não conseguiu excluir o ganho.");
         }
@@ -200,6 +225,8 @@ filtroMes.addEventListener("change", () => {
 async function carregarGanhos() {
     const { inicio, fim } = periodoDoMes(filtroMes.value);
     const resposta = await fetch(`/api/ganhos?inicio=${inicio}&fim=${fim}`);
+    if (redirecionarSeNaoAutorizado(resposta)) return;
+
     if (!resposta.ok) {
         console.error("Falha ao carregar ganhos:", resposta.status);
         return;
