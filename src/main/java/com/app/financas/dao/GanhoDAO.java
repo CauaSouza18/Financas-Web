@@ -10,71 +10,73 @@ import com.app.financas.model.Ganho;
 
 public class GanhoDAO {
 
-    public ArrayList<Ganho> listGanhos() throws SQLException {
-        String sql = "SELECT id, valor, plataforma, Cadastrado_Em AS data FROM ganhos";
+    public ArrayList<Ganho> listGanhos(int usuarioId) throws SQLException {
+        String sql = "SELECT id, valor, plataforma, Cadastrado_Em AS data FROM ganhos "
+                + "WHERE usuario_id = ? ORDER BY Cadastrado_Em, id";
         ArrayList<Ganho> ganhos = new ArrayList<>();
 
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql); var resultado = comando.executeQuery()) {
+        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+            comando.setInt(1, usuarioId);
+            try (var resultado = comando.executeQuery()) {
+                while (resultado.next()) {
+                    int id = resultado.getInt("id");
+                    double valor = resultado.getDouble("valor");
+                    String plataforma = resultado.getString("plataforma");
+                    LocalDate data = resultado.getDate("data").toLocalDate();
 
-            while (resultado.next()) {
-                int id = resultado.getInt("id");
-                double valor = resultado.getDouble("valor");
-                String plataforma = resultado.getString("plataforma");
-                LocalDate data = resultado.getDate("data").toLocalDate();
-
-                Ganho ganho = new Ganho(id, valor, plataforma, data);
-                ganhos.add(ganho);
+                    Ganho ganho = new Ganho(id, valor, plataforma, data);
+                    ganhos.add(ganho);
+                }
             }
         }
         return ganhos;
     }
 
-    public ArrayList<Ganho> listarPorPeriodo(LocalDate inicio, LocalDate fim) throws SQLException {
+    public ArrayList<Ganho> listarPorPeriodo(LocalDate inicio, LocalDate fim, int usuarioId) throws SQLException {
         String sql = "SELECT id, valor, plataforma, Cadastrado_Em AS data FROM ganhos "
-                + "WHERE Cadastrado_Em BETWEEN ? AND ? ORDER BY Cadastrado_Em, id";
+                + "WHERE usuario_id = ? AND Cadastrado_Em BETWEEN ? AND ? ORDER BY Cadastrado_Em, id";
         ArrayList<Ganho> ganhos = new ArrayList<>();
 
         try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
-            comando.setDate(1, java.sql.Date.valueOf(inicio));
-            comando.setDate(2, java.sql.Date.valueOf(fim));
+            comando.setInt(1, usuarioId);
+            comando.setDate(2, java.sql.Date.valueOf(inicio));
+            comando.setDate(3, java.sql.Date.valueOf(fim));
             try (var resultado = comando.executeQuery()) {
                 while (resultado.next()) {
                     ganhos.add(new Ganho(
-                        resultado.getInt("id"),
-                        resultado.getDouble("Valor"),
-                        resultado.getString("plataforma"),
-                       resultado.getDate("data").toLocalDate()
-                    )
-                );
-            
-                    
+                            resultado.getInt("id"),
+                            resultado.getDouble("valor"),
+                            resultado.getString("plataforma"),
+                            resultado.getDate("data").toLocalDate()
+                    ));
                 }
             }
-            }
-            return ganhos;
         }
+        return ganhos;
+    }
 
-    
-
-    public boolean atualizar(Ganho ganho) throws SQLException {
-        String sql = "UPDATE ganhos set valor = ?, plataforma = ?, Cadastrado_Em = ? WHERE id = ?";
+    public boolean atualizar(Ganho ganho, int usuarioId) throws SQLException {
+        String sql = "UPDATE ganhos set valor = ?, plataforma = ?, Cadastrado_Em = ? "
+                + "WHERE id = ? AND usuario_id = ?";
         int linhasAfetadas;
         try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setDouble(1, ganho.getValor());
             comando.setString(2, ganho.getPlataforma());
             comando.setObject(3, ganho.getData());
             comando.setInt(4, ganho.getId());
+            comando.setInt(5, usuarioId);
             linhasAfetadas = comando.executeUpdate();
 
         }
         return linhasAfetadas > 0;
     }
 
-    public boolean deletar(int id) throws SQLException {
-        String sql = "DELETE from ganhos WHERE id = ?";
+    public boolean deletar(int id, int usuarioId) throws SQLException {
+        String sql = "DELETE from ganhos WHERE id = ? AND usuario_id = ?";
         int linhasAfetadas;
         try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setInt(1, id);
+            comando.setInt(2, usuarioId);
             linhasAfetadas = comando.executeUpdate();
 
         }
@@ -82,22 +84,24 @@ public class GanhoDAO {
 
     }
 
-    public void salvar(Ganho ganho) throws SQLException {
-        String sql = "INSERT INTO ganhos (valor, plataforma, Cadastrado_Em) VALUES (?, ?, ?)";
+    public void salvar(Ganho ganho, int usuarioId) throws SQLException {
+        String sql = "INSERT INTO ganhos (valor, plataforma, Cadastrado_Em, usuario_id) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setDouble(1, ganho.getValor());
             comando.setString(2, ganho.getPlataforma());
             comando.setObject(3, ganho.getData());
+            comando.setInt(4, usuarioId);
             comando.executeUpdate();
         }
     }
-    public double totalPorPlataforma(String plataforma) throws SQLException {
-        String sql = "SELECT SUM(valor) FROM ganhos WHERE plataforma = ?";
+    public double totalPorPlataforma(String plataforma, int usuarioId) throws SQLException {
+        String sql = "SELECT SUM(valor) FROM ganhos WHERE plataforma = ? AND usuario_id = ?";
 
         try (Connection conn = Conexao.conectar();
              PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setString(1, plataforma);
+            comando.setInt(2, usuarioId);
 
             try (ResultSet resultado = comando.executeQuery()) {
                 if (resultado.next()) {

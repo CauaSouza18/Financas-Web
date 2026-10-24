@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,25 +31,27 @@ public class GanhoController {
     @GetMapping
     public ArrayList<Ganho> listar(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim,
+            HttpSession sessao) {
+        int usuarioId = usuarioDaSessao(sessao);
         try {
             if (inicio != null || fim != null) {
                 if (inicio == null || fim == null || inicio.isAfter(fim)) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                             "Informe inicio e fim válidos no formato YYYY-MM-DD.");
                 }
-                return ganhoDAO.listarPorPeriodo(inicio, fim);
+                return ganhoDAO.listarPorPeriodo(inicio, fim, usuarioId);
             }
-            return ganhoDAO.listGanhos();
+            return ganhoDAO.listGanhos(usuarioId);
         } catch (SQLException e) {
             throw erroBanco(e);
         }
     }
 
     @GetMapping("/total/{plataforma}")
-    public double totalPorPlataforma(@PathVariable String plataforma) {
+    public double totalPorPlataforma(@PathVariable String plataforma, HttpSession sessao) {
         try {
-            return ganhoDAO.totalPorPlataforma(plataforma);
+            return ganhoDAO.totalPorPlataforma(plataforma, usuarioDaSessao(sessao));
         } catch (SQLException e) {
             throw erroBanco(e);
         }
@@ -56,19 +59,19 @@ public class GanhoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void criar(@RequestBody Ganho ganho) {
+    public void criar(@RequestBody Ganho ganho, HttpSession sessao) {
         try {
-            ganhoDAO.salvar(ganho);
+            ganhoDAO.salvar(ganho, usuarioDaSessao(sessao));
         } catch (SQLException e) {
             throw erroBanco(e);
         }
     }
 
     @PutMapping("/{id}")
-    public void atualizar(@PathVariable int id, @RequestBody Ganho ganho) {
+    public void atualizar(@PathVariable int id, @RequestBody Ganho ganho, HttpSession sessao) {
         ganho.setId(id);
         try {
-            if (!ganhoDAO.atualizar(ganho)) {
+            if (!ganhoDAO.atualizar(ganho, usuarioDaSessao(sessao))) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ganho não encontrado.");
             }
         } catch (SQLException e) {
@@ -78,9 +81,9 @@ public class GanhoController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletar(@PathVariable int id) {
+    public void deletar(@PathVariable int id, HttpSession sessao) {
         try {
-            if (!ganhoDAO.deletar(id)) {
+            if (!ganhoDAO.deletar(id, usuarioDaSessao(sessao))) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ganho não encontrado.");
             }
         } catch (SQLException e) {
@@ -91,5 +94,13 @@ public class GanhoController {
     private ResponseStatusException erroBanco(SQLException e) {
         return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Erro ao acessar os ganhos no banco de dados.", e);
+    }
+
+    private int usuarioDaSessao(HttpSession sessao) {
+        Object atributo = sessao.getAttribute("usuarioId");
+        if (atributo instanceof Integer usuarioId) {
+            return usuarioId;
+        }
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sessão inválida.");
     }
 }
