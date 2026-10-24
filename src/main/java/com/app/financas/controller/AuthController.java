@@ -35,8 +35,16 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o email");
         }
 
+        if (!dados.email().contains("@")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe um email válido");
+        }
+
         if (dados.senha() == null || dados.senha().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a senha");
+        }
+
+        if (dados.senha().length() < 6) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A senha deve ter pelo menos 6 caracteres");
         }
         try {
             String email = dados.email().trim().toLowerCase();

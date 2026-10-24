@@ -57,7 +57,7 @@
 		input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(66,214,162,.12); }
 		input::placeholder { color: #73867a; }
 		.options { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 14px 0 22px; font-size: 12px; }
-		#erro-login { margin: -8px 0 14px; color: #ff9b9b; font-size: 13px; }
+		#erro-login, #erro-cadastro { margin: -8px 0 14px; color: #ff9b9b; font-size: 13px; }
 		.remember { display: flex; align-items: center; gap: 8px; color: var(--muted); }
 		.remember input { width: 15px; height: 15px; margin: 0; padding: 0; accent-color: var(--green); }
 		a { color: var(--green); text-decoration: none; }
