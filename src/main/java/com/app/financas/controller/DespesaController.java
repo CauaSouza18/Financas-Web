@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 
 import com.app.financas.dao.DespesaDAO;
 import com.app.financas.model.Despesa;
@@ -26,6 +27,9 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/despesas")
 public class DespesaController {
 
+    private static final Set<String> CATEGORIAS = Set.of(
+            "Bike", "Alimentação", "Moradia", "Internet/Celular",
+            "Transporte", "Saúde", "Lazer", "Outros");
     private final DespesaDAO despesaDAO = new DespesaDAO();
 
     @GetMapping
@@ -105,11 +109,12 @@ public class DespesaController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "O valor deve ter até 8 dígitos inteiros e 2 casas decimais.");
         }
-        if (despesa.getCategoria() == null || despesa.getCategoria().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a categoria.");
+        if (despesa.getCategoria() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma categoria válida.");
         }
-        if (despesa.getCategoria().trim().length() > 100) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A categoria deve ter até 100 caracteres.");
+        String categoria = despesa.getCategoria().trim();
+        if (!CATEGORIAS.contains(categoria)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma categoria válida.");
         }
         if (despesa.getDescricao() != null && despesa.getDescricao().length() > 255) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A descrição deve ter até 255 caracteres.");
@@ -117,7 +122,7 @@ public class DespesaController {
         if (despesa.getData() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a data.");
         }
-        despesa.setCategoria(despesa.getCategoria().trim());
+        despesa.setCategoria(categoria);
         despesa.setDescricao(despesa.getDescricao() == null ? "" : despesa.getDescricao().trim());
     }
 

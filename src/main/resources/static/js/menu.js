@@ -169,7 +169,7 @@ function marcarDespesaEmEdicao() {
 function iniciarEdicaoDespesa(despesa) {
     idDespesaEmEdicao = despesa.id;
     document.querySelector("#valor-despesa").value = Number(despesa.valor).toFixed(2);
-    document.querySelector("#categoria-despesa").value = despesa.categoria;
+    document.querySelector("#categoria").value = despesa.categoria;
     document.querySelector("#descricao-despesa").value = despesa.descricao || "";
     campoDataDespesa.value = despesa.data;
     tituloFormDespesa.textContent = "Editar despesa";
@@ -267,7 +267,7 @@ formularioDespesa.addEventListener("submit", async evento => {
 
     const despesa = {
         valor: Number(document.querySelector("#valor-despesa").value),
-        categoria: document.querySelector("#categoria-despesa").value.trim(),
+        categoria: document.querySelector("#categoria").value.trim(),
         descricao: document.querySelector("#descricao-despesa").value.trim(),
         data: campoDataDespesa.value
     };

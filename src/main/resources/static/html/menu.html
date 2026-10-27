@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#f3f7f4">
     <title>Resumo financeiro | Finanças</title>
     <link rel="stylesheet" href="../css/menu.css?v=20261027.1">
-    <script src="../js/menu.js?v=20261027.1" defer></script>
+    <script src="../js/menu.js?v=20261027.2" defer></script>
 </head>
 
 <body>
@@ -189,8 +189,18 @@
                             </div>
                         </div>
                         <div class="field">
-                            <label for="categoria-despesa">Categoria</label>
-                            <input class="text-input" id="categoria-despesa" type="text" maxlength="100" placeholder="Ex.: combustível" required>
+                            <label for="categoria">Categoria</label>
+                            <select class="text-input" id="categoria" required>
+                                <option value="">Selecione...</option>
+                                <option value="Bike">Bike</option>
+                                <option value="Alimentação">Alimentação</option>
+                                <option value="Moradia">Moradia</option>
+                                <option value="Internet/Celular">Internet/Celular</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Saúde">Saúde</option>
+                                <option value="Lazer">Lazer</option>
+                                <option value="Outros">Outros</option>
+                            </select>
                         </div>
                         <div class="field">
                             <label for="data-despesa">Data</label>
