@@ -3,6 +3,7 @@ package com.app.financas.controller;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Map;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -43,6 +44,22 @@ public class GanhoController {
                 return ganhoDAO.listarPorPeriodo(inicio, fim, usuarioId);
             }
             return ganhoDAO.listGanhos(usuarioId);
+        } catch (SQLException e) {
+            throw erroBanco(e);
+        }
+    }
+
+    @GetMapping("/por-plataforma")
+    public Map<String, Double> totaisPorPlataforma(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim,
+            HttpSession sessao) {
+        if (inicio.isAfter(fim)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Informe inicio e fim válidos no formato YYYY-MM-DD.");
+        }
+        try {
+            return ganhoDAO.totaisPorPlataforma(usuarioDaSessao(sessao), inicio, fim);
         } catch (SQLException e) {
             throw erroBanco(e);
         }

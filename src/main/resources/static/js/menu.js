@@ -18,6 +18,8 @@ const tituloFormDespesa = document.querySelector("#titulo-form-despesa");
 const descricaoFormDespesa = document.querySelector("#descricao-form-despesa");
 const secaoFormDespesa = document.querySelector("#secao-despesas");
 const tabelaDespesas = document.querySelector("#lista-despesas");
+const listaPlataformas = document.querySelector("#lista-plataformas");
+const mensagemSemGanhos = document.querySelector("#mensagem-sem-ganhos");
 
 const DESCRICAO_PADRAO = descricaoForm.textContent;
 const DESCRICAO_PADRAO_DESPESA = descricaoFormDespesa.textContent;
@@ -38,11 +40,12 @@ const logoDoApp = {
 };
 
 function criarIdentificacaoApp(plataforma) {
+    const nomeDaPlataforma = String(plataforma ?? "");
     const identificacao = document.createElement("span");
     identificacao.className = "app-name";
 
-    const logoDoAppAtual = Object.prototype.hasOwnProperty.call(logoDoApp, plataforma)
-        ? logoDoApp[plataforma]
+    const logoDoAppAtual = Object.prototype.hasOwnProperty.call(logoDoApp, nomeDaPlataforma)
+        ? logoDoApp[nomeDaPlataforma]
         : null;
     if (logoDoAppAtual) {
         const logo = document.createElement("img");
@@ -53,10 +56,16 @@ function criarIdentificacaoApp(plataforma) {
         logo.loading = "lazy";
         logo.decoding = "async";
         identificacao.append(logo);
+    } else {
+        const iconeGenerico = document.createElement("span");
+        iconeGenerico.className = "app-logo app-logo--placeholder";
+        iconeGenerico.setAttribute("aria-hidden", "true");
+        iconeGenerico.textContent = nomeDaPlataforma.trim().slice(0, 1).toLocaleUpperCase("pt-BR");
+        identificacao.append(iconeGenerico);
     }
 
     const nome = document.createElement("span");
-    nome.textContent = plataforma;
+    nome.textContent = nomeDaPlataforma;
     identificacao.append(nome);
     return identificacao;
 }
@@ -389,6 +398,56 @@ async function carregarCategorias() {
     }
 }
 
+async function carregarTotaisPorPlataforma() {
+    const { inicio, fim } = periodoDoMes(filtroMes.value);
+    listaPlataformas.replaceChildren();
+    mensagemSemGanhos.textContent = "Carregando ganhos por aplicativo...";
+    mensagemSemGanhos.hidden = false;
+
+    try {
+        const resposta = await fetch(`/api/ganhos/por-plataforma?inicio=${inicio}&fim=${fim}`);
+        if (redirecionarSeNaoAutorizado(resposta)) return;
+        if (!resposta.ok) {
+            console.error("Falha ao carregar ganhos por aplicativo:", resposta.status);
+            mensagemSemGanhos.textContent = "Não foi possível carregar os ganhos por aplicativo.";
+            mensagemSemGanhos.hidden = false;
+            return;
+        }
+
+        const dados = await resposta.json();
+        const plataformas = Object.entries(dados).sort(([plataformaA, valorA], [plataformaB, valorB]) =>
+            Number(valorB) - Number(valorA) || plataformaA.localeCompare(plataformaB, "pt-BR"));
+        if (plataformas.length === 0) {
+            mensagemSemGanhos.textContent = "Sem ganhos neste mês";
+            mensagemSemGanhos.hidden = false;
+            return;
+        }
+
+        mensagemSemGanhos.hidden = true;
+        const total = plataformas.reduce((soma, [, valor]) => soma + Number(valor), 0);
+        plataformas.forEach(([plataforma, valorRecebido]) => {
+            const valor = Number(valorRecebido);
+            const porcentagem = total > 0 ? Math.round(valor / total * 100) : 0;
+            const linha = document.createElement("div");
+            linha.className = "platform-row";
+            linha.append(criarIdentificacaoApp(String(plataforma ?? "")));
+
+            const participacao = document.createElement("span");
+            participacao.className = "share";
+            participacao.textContent = `${porcentagem}%`;
+
+            const valorFormatado = document.createElement("strong");
+            valorFormatado.textContent = formatarMoeda(valor);
+            linha.append(participacao, valorFormatado);
+            listaPlataformas.append(linha);
+        });
+    } catch (erro) {
+        console.error("Falha ao carregar ganhos por aplicativo:", erro);
+        mensagemSemGanhos.textContent = "Não foi possível carregar os ganhos por aplicativo.";
+        mensagemSemGanhos.hidden = false;
+    }
+}
+
 async function carregarLancamentos() {
     const { inicio, fim } = periodoDoMes(filtroMes.value);
     let ganhos;
@@ -421,18 +480,6 @@ async function carregarLancamentos() {
     document.querySelector("#total-geral").textContent = formatarMoeda(totalGanhos - totalDespesas);
     document.querySelector("#resumo-saldo").textContent =
         `Ganhos ${formatarMoeda(totalGanhos)} · despesas ${formatarMoeda(totalDespesas)}`;
-
-    const somarPlataforma = plataforma =>
-        ganhos
-            .filter(ganho => ganho.plataforma === plataforma)
-            .reduce((soma, ganho) => soma + Number(ganho.valor), 0);
-
-    [["99", "99"], ["iFood", "ifood"], ["Uber Driver", "uber"]].forEach(([plataforma, chave]) => {
-        const valor = somarPlataforma(plataforma);
-        document.querySelector(`#total-${chave}`).textContent = formatarMoeda(valor);
-        document.querySelector(`#parte-${chave}`).textContent =
-            totalGanhos > 0 ? `${Math.round(valor / totalGanhos * 100)}%` : "";
-    });
 
     document.querySelector("#contagem-registros").textContent =
         ganhos.length === 1 ? "1 registro" : `${ganhos.length} registros`;
@@ -490,7 +537,7 @@ async function carregarLancamentos() {
         });
     }
 
-    await carregarCategorias();
+    await Promise.all([carregarCategorias(), carregarTotaisPorPlataforma()]);
 }
 
 filtroMes.value = mesAtual();

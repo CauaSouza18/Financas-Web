@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f3f7f4">
     <title>Resumo financeiro | Finanças</title>
-    <link rel="stylesheet" href="../css/menu.css?v=20261024.2">
-    <script src="../js/menu.js?v=20261024.3" defer></script>
+    <link rel="stylesheet" href="../css/menu.css?v=20261027.1">
+    <script src="../js/menu.js?v=20261027.1" defer></script>
 </head>
 
 <body>
@@ -73,21 +73,8 @@
                 </div>
                 <div class="platform-list">
                     <h2>Ganhos por aplicativo</h2>
-                    <div class="platform-row">
-                        <span class="app-name"><img class="app-logo app-logo--99" src="../images/apps/99food.png" alt="" aria-hidden="true" width="28" height="28"><span>99</span></span>
-                        <span class="share" id="parte-99"></span>
-                        <strong id="total-99">—</strong>
-                    </div>
-                    <div class="platform-row">
-                        <span class="app-name"><img class="app-logo app-logo--ifood" src="../images/apps/ifood.png" alt="" aria-hidden="true" width="28" height="28"><span>iFood</span></span>
-                        <span class="share" id="parte-ifood"></span>
-                        <strong id="total-ifood">—</strong>
-                    </div>
-                    <div class="platform-row">
-                        <span class="app-name"><img class="app-logo app-logo--uber" src="../images/apps/uber.png" alt="" aria-hidden="true" width="28" height="28"><span>Uber Driver</span></span>
-                        <span class="share" id="parte-uber"></span>
-                        <strong id="total-uber">—</strong>
-                    </div>
+                    <div class="platform-items" id="lista-plataformas" aria-live="polite"></div>
+                    <p class="platform-empty" id="mensagem-sem-ganhos" hidden>Sem ganhos neste mês</p>
                 </div>
             </section>
             <section class="transactions category-report" id="relatorios" aria-label="Despesas por categoria">

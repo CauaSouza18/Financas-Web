@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import com.app.financas.model.Ganho;
 
 public class GanhoDAO {
@@ -111,5 +113,25 @@ public class GanhoDAO {
         }
 
         return 0.0;
+    }
+
+    public Map<String, Double> totaisPorPlataforma(int usuarioId, LocalDate inicio, LocalDate fim)
+            throws SQLException {
+        String sql = "SELECT plataforma, SUM(valor) FROM ganhos "
+                + "WHERE usuario_id = ? AND cadastrado_em BETWEEN ? AND ? "
+                + "GROUP BY plataforma ORDER BY SUM(valor) DESC, plataforma";
+        Map<String, Double> totais = new LinkedHashMap<>();
+
+        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+            comando.setInt(1, usuarioId);
+            comando.setDate(2, java.sql.Date.valueOf(inicio));
+            comando.setDate(3, java.sql.Date.valueOf(fim));
+            try (ResultSet resultado = comando.executeQuery()) {
+                while (resultado.next()) {
+                    totais.put(resultado.getString("plataforma"), resultado.getDouble(2));
+                }
+            }
+        }
+        return totais;
     }
 }

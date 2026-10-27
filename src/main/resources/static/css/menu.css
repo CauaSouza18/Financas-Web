@@ -125,6 +125,7 @@ h1 { margin: 0; font-size: clamp(29px, 3vw, 35px); line-height: 1.15; font-weigh
 .platform-row .app-name { flex: 1; }
 .platform-row strong { min-width: 110px; text-align: right; color: var(--ink); font-weight: 650; font-variant-numeric: tabular-nums; }
 .share { min-width: 42px; padding: 3px 7px; border-radius: 999px; background: var(--green-soft); color: var(--green); text-align: center; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.platform-empty { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
 
 /* Relatório de despesas por categoria */
 .category-report-content { padding: 0 24px 22px; }
@@ -143,6 +144,7 @@ h1 { margin: 0; font-size: clamp(29px, 3vw, 35px); line-height: 1.15; font-weigh
 .app-logo { display: block; width: 28px; height: 28px; flex: none; border-radius: 6px; object-fit: contain; }
 .app-logo--form { width: 40px; height: 40px; border-radius: 9px; }
 .app-logo--uber { background: #111; }
+.app-logo--placeholder { display: grid; place-items: center; border: 1px solid var(--line); background: var(--green-soft); color: var(--green); font-size: 12px; font-weight: 700; }
 
 /* Seções com cabeçalho */
 .transactions { margin-top: 24px; overflow: hidden; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-card); scroll-margin-top: 82px; }
