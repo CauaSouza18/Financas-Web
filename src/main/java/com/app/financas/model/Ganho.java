@@ -1,15 +1,16 @@
 package com.app.financas.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class Ganho {
     private int id;
-    private double valor;
+    private BigDecimal valor;
     private String plataforma;
     private LocalDate data;
-    public double getValor() {
+    public BigDecimal getValor() {
         return valor;
     }
     public String getPlataforma() {
@@ -19,7 +20,7 @@ public class Ganho {
     public Ganho() {
 
     }
-    public Ganho(int id, double valor, String plataforma, LocalDate data) {
+    public Ganho(int id, BigDecimal valor, String plataforma, LocalDate data) {
 
         this.id = id;
         this.valor = valor;
@@ -29,7 +30,7 @@ public class Ganho {
     public LocalDate getData() {
         return data;
     }
-    public void setValor(double valor) {
+    public void setValor(BigDecimal valor) {
         this.valor = valor;
     }
     public void setPlataforma(String plataforma) {

@@ -1,5 +1,6 @@
 package com.app.financas.dao;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,7 +23,7 @@ public class GanhoDAO {
             try (var resultado = comando.executeQuery()) {
                 while (resultado.next()) {
                     int id = resultado.getInt("id");
-                    double valor = resultado.getDouble("valor");
+                    BigDecimal valor = resultado.getBigDecimal("valor");
                     String plataforma = resultado.getString("plataforma");
                     LocalDate data = resultado.getDate("data").toLocalDate();
 
@@ -47,7 +48,7 @@ public class GanhoDAO {
                 while (resultado.next()) {
                     ganhos.add(new Ganho(
                             resultado.getInt("id"),
-                            resultado.getDouble("valor"),
+                            resultado.getBigDecimal("valor"),
                             resultado.getString("plataforma"),
                             resultado.getDate("data").toLocalDate()
                     ));
@@ -62,7 +63,7 @@ public class GanhoDAO {
                 + "WHERE id = ? AND usuario_id = ?";
         int linhasAfetadas;
         try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
-            comando.setDouble(1, ganho.getValor());
+            comando.setBigDecimal(1, ganho.getValor());
             comando.setString(2, ganho.getPlataforma());
             comando.setObject(3, ganho.getData());
             comando.setInt(4, ganho.getId());
@@ -90,7 +91,7 @@ public class GanhoDAO {
         String sql = "INSERT INTO ganhos (valor, plataforma, Cadastrado_Em, usuario_id) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
-            comando.setDouble(1, ganho.getValor());
+            comando.setBigDecimal(1, ganho.getValor());
             comando.setString(2, ganho.getPlataforma());
             comando.setObject(3, ganho.getData());
             comando.setInt(4, usuarioId);

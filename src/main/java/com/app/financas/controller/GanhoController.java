@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -27,6 +28,7 @@ import com.app.financas.model.Ganho;
 @RequestMapping("/api/ganhos")
 public class GanhoController {
 
+    private static final Set<String> PLATAFORMAS_PERMITIDAS = Set.of("99", "iFood", "Uber Driver");
     private final GanhoDAO ganhoDAO = new GanhoDAO();
 
     @GetMapping
@@ -77,6 +79,7 @@ public class GanhoController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void criar(@RequestBody Ganho ganho, HttpSession sessao) {
+        validar(ganho);
         try {
             ganhoDAO.salvar(ganho, usuarioDaSessao(sessao));
         } catch (SQLException e) {
@@ -86,6 +89,7 @@ public class GanhoController {
 
     @PutMapping("/{id}")
     public void atualizar(@PathVariable int id, @RequestBody Ganho ganho, HttpSession sessao) {
+        validar(ganho);
         ganho.setId(id);
         try {
             if (!ganhoDAO.atualizar(ganho, usuarioDaSessao(sessao))) {
@@ -105,6 +109,25 @@ public class GanhoController {
             }
         } catch (SQLException e) {
             throw erroBanco(e);
+        }
+    }
+
+    private void validar(Ganho ganho) {
+        if (ganho == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe os dados do ganho.");
+        }
+        if (ganho.getValor() == null || ganho.getValor().signum() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe um valor maior que zero.");
+        }
+        if (ganho.getValor().scale() > 2 || ganho.getValor().precision() - ganho.getValor().scale() > 8) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "O valor deve ter até 8 dígitos inteiros e 2 casas decimais.");
+        }
+        if (ganho.getPlataforma() == null || !PLATAFORMAS_PERMITIDAS.contains(ganho.getPlataforma())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione um aplicativo válido.");
+        }
+        if (ganho.getData() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a data.");
         }
     }
 
