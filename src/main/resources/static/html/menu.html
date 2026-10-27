@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f3f7f4">
     <title>Resumo financeiro | Finanças</title>
-    <link rel="stylesheet" href="../css/menu.css?v=20261027.1">
-    <script src="../js/menu.js?v=20261027.2" defer></script>
+    <link rel="stylesheet" href="../css/menu.css?v=20261027.2">
+    <script src="../js/menu.js?v=20261027.3" defer></script>
 </head>
 
 <body>
@@ -77,16 +77,50 @@
                     <p class="platform-empty" id="mensagem-sem-ganhos" hidden>Sem ganhos neste mês</p>
                 </div>
             </section>
-            <section class="transactions category-report" id="relatorios" aria-label="Despesas por categoria">
+            <section class="transactions report-section" id="relatorios" aria-labelledby="titulo-relatorios">
                 <div class="section-heading">
                     <div>
-                        <h2>Despesas por categoria</h2>
-                        <p>Veja como os gastos do mês se distribuem</p>
+                        <h2 id="titulo-relatorios">Relatórios</h2>
+                        <p id="descricao-relatorio">Resumo de ganhos e despesas no período</p>
                     </div>
                 </div>
-                <div class="category-report-content">
-                    <p class="category-empty" id="mensagem-sem-despesas" hidden>Sem despesas neste mês</p>
-                    <div class="category-list" id="lista-categorias" aria-live="polite"></div>
+                <form class="report-filters" id="form-relatorio">
+                    <label class="report-field" for="relatorio-inicio">
+                        De
+                        <input id="relatorio-inicio" type="date" required>
+                    </label>
+                    <label class="report-field" for="relatorio-fim">
+                        Até
+                        <input id="relatorio-fim" type="date" required>
+                    </label>
+                    <button class="button button-primary" type="submit">Gerar relatório</button>
+                </form>
+                <p class="report-status" id="mensagem-relatorio" role="status" hidden></p>
+                <div class="report-summary" aria-live="polite">
+                    <div class="report-total-card">
+                        <span>Ganhos</span>
+                        <strong id="total-relatorio-ganhos">—</strong>
+                    </div>
+                    <div class="report-total-card">
+                        <span>Despesas</span>
+                        <strong id="total-relatorio-despesas">—</strong>
+                    </div>
+                    <div class="report-total-card">
+                        <span>Saldo do período</span>
+                        <strong class="report-balance" id="saldo-relatorio">—</strong>
+                    </div>
+                </div>
+                <div class="report-breakdowns">
+                    <section class="report-breakdown" aria-labelledby="titulo-despesas-categoria">
+                        <h3 id="titulo-despesas-categoria">Despesas por categoria</h3>
+                        <p class="category-empty" id="mensagem-sem-despesas" hidden>Sem despesas no período selecionado.</p>
+                        <div class="category-list" id="lista-categorias" aria-live="polite"></div>
+                    </section>
+                    <section class="report-breakdown" aria-labelledby="titulo-ganhos-plataforma">
+                        <h3 id="titulo-ganhos-plataforma">Ganhos por aplicativo</h3>
+                        <p class="category-empty" id="mensagem-sem-ganhos-relatorio" hidden>Sem ganhos no período selecionado.</p>
+                        <div class="category-list" id="lista-plataformas-relatorio" aria-live="polite"></div>
+                    </section>
                 </div>
             </section>
             <section class="transactions" id="secao-form">

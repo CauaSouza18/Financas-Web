@@ -20,6 +20,13 @@ const secaoFormDespesa = document.querySelector("#secao-despesas");
 const tabelaDespesas = document.querySelector("#lista-despesas");
 const listaPlataformas = document.querySelector("#lista-plataformas");
 const mensagemSemGanhos = document.querySelector("#mensagem-sem-ganhos");
+const formularioRelatorio = document.querySelector("#form-relatorio");
+const campoInicioRelatorio = document.querySelector("#relatorio-inicio");
+const campoFimRelatorio = document.querySelector("#relatorio-fim");
+const descricaoRelatorio = document.querySelector("#descricao-relatorio");
+const totalRelatorioGanhos = document.querySelector("#total-relatorio-ganhos");
+const totalRelatorioDespesas = document.querySelector("#total-relatorio-despesas");
+const saldoRelatorio = document.querySelector("#saldo-relatorio");
 
 const DESCRICAO_PADRAO = descricaoForm.textContent;
 const DESCRICAO_PADRAO_DESPESA = descricaoFormDespesa.textContent;
@@ -339,64 +346,119 @@ filtroMes.addEventListener("change", () => {
     if (filtroMes.value) carregarLancamentos();
 });
 
-async function carregarCategorias() {
-    const { inicio, fim } = periodoDoMes(filtroMes.value);
-    const lista = document.querySelector("#lista-categorias");
-    const mensagemVazia = document.querySelector("#mensagem-sem-despesas");
-    lista.replaceChildren();
-    mensagemVazia.hidden = true;
+function renderizarQuebraRelatorio(lista, itens, total, montarNome) {
+    itens.forEach(([chave, valorRecebido]) => {
+        const valor = Number(valorRecebido);
+        const porcentagem = total > 0 ? valor / total * 100 : 0;
+        const linha = document.createElement("div");
+        linha.className = "category-row";
+
+        const cabecalho = document.createElement("div");
+        cabecalho.className = "category-row-head";
+        const nome = document.createElement("span");
+        nome.className = "category-name";
+        montarNome(nome, chave);
+
+        const participacao = document.createElement("span");
+        participacao.className = "share";
+        participacao.textContent = `${Math.round(porcentagem)}%`;
+
+        const valorFormatado = document.createElement("strong");
+        valorFormatado.className = "category-value";
+        valorFormatado.textContent = formatarMoeda(valor);
+        cabecalho.append(nome, participacao, valorFormatado);
+
+        const trilho = document.createElement("div");
+        trilho.className = "category-track";
+        trilho.setAttribute("role", "progressbar");
+        trilho.setAttribute("aria-valuemin", "0");
+        trilho.setAttribute("aria-valuemax", "100");
+        trilho.setAttribute("aria-valuenow", String(porcentagem));
+        trilho.setAttribute("aria-label", `${chave}: ${Math.round(porcentagem)}%`);
+        const barra = document.createElement("span");
+        barra.className = "category-bar";
+        barra.style.width = `${porcentagem}%`;
+        trilho.append(barra);
+
+        linha.append(cabecalho, trilho);
+        lista.append(linha);
+    });
+}
+
+async function carregarRelatorio() {
+    const inicio = campoInicioRelatorio.value;
+    const fim = campoFimRelatorio.value;
+    const listaCategorias = document.querySelector("#lista-categorias");
+    const listaPlataformasRelatorio = document.querySelector("#lista-plataformas-relatorio");
+    const mensagem = document.querySelector("#mensagem-relatorio");
+    const mensagemSemDespesas = document.querySelector("#mensagem-sem-despesas");
+    const mensagemSemGanhosRelatorio = document.querySelector("#mensagem-sem-ganhos-relatorio");
+
+    listaCategorias.replaceChildren();
+    listaPlataformasRelatorio.replaceChildren();
+    mensagemSemDespesas.hidden = true;
+    mensagemSemGanhosRelatorio.hidden = true;
+    mensagem.classList.remove("is-error");
+    mensagem.textContent = "Gerando relatório...";
+    mensagem.hidden = false;
+    totalRelatorioGanhos.textContent = "—";
+    totalRelatorioDespesas.textContent = "—";
+    saldoRelatorio.textContent = "—";
+    saldoRelatorio.classList.remove("is-negative");
+
+    if (!inicio || !fim || inicio > fim) {
+        mensagem.textContent = "Informe um período válido: a data inicial deve ser anterior ou igual à data final.";
+        mensagem.classList.add("is-error");
+        return;
+    }
 
     try {
-        const resposta = await fetch(`/api/despesas/por-categoria?inicio=${inicio}&fim=${fim}`);
-        if (redirecionarSeNaoAutorizado(resposta)) return;
-        if (!resposta.ok) {
-            console.error("Falha ao carregar despesas por categoria:", resposta.status);
-            return;
+        const parametros = `inicio=${encodeURIComponent(inicio)}&fim=${encodeURIComponent(fim)}`;
+        const [respostaDespesas, respostaGanhos] = await Promise.all([
+            fetch(`/api/despesas/por-categoria?${parametros}`),
+            fetch(`/api/ganhos/por-plataforma?${parametros}`)
+        ]);
+        if (redirecionarSeNaoAutorizado(respostaDespesas) || redirecionarSeNaoAutorizado(respostaGanhos)) return;
+        if (!respostaDespesas.ok || !respostaGanhos.ok) {
+            throw new Error(`Falha nas APIs: despesas ${respostaDespesas.status}, ganhos ${respostaGanhos.status}.`);
         }
 
-        const dados = await resposta.json();
-        const categorias = Object.entries(dados);
-        if (categorias.length === 0) {
-            mensagemVazia.hidden = false;
-            return;
-        }
+        const [dadosDespesas, dadosGanhos] = await Promise.all([
+            respostaDespesas.json(),
+            respostaGanhos.json()
+        ]);
+        const categorias = Object.entries(dadosDespesas).sort(([categoriaA, valorA], [categoriaB, valorB]) =>
+            Number(valorB) - Number(valorA) || categoriaA.localeCompare(categoriaB, "pt-BR"));
+        const plataformas = Object.entries(dadosGanhos).sort(([plataformaA, valorA], [plataformaB, valorB]) =>
+            Number(valorB) - Number(valorA) || plataformaA.localeCompare(plataformaB, "pt-BR"));
+        const totalDespesas = categorias.reduce((soma, [, valor]) => soma + Number(valor), 0);
+        const totalGanhos = plataformas.reduce((soma, [, valor]) => soma + Number(valor), 0);
+        const saldo = totalGanhos - totalDespesas;
 
-        const total = categorias.reduce((soma, [, valor]) => soma + Number(valor), 0);
-        categorias.forEach(([categoria, valorRecebido]) => {
-            const valor = Number(valorRecebido);
-            const porcentagem = total > 0 ? valor / total * 100 : 0;
-            const linha = document.createElement("div");
-            linha.className = "category-row";
+        totalRelatorioGanhos.textContent = formatarMoeda(totalGanhos);
+        totalRelatorioDespesas.textContent = formatarMoeda(totalDespesas);
+        saldoRelatorio.textContent = formatarMoeda(saldo);
+        saldoRelatorio.classList.toggle("is-negative", saldo < 0);
+        descricaoRelatorio.textContent = `De ${formatarData(inicio)} a ${formatarData(fim)}`;
 
-            const cabecalho = document.createElement("div");
-            cabecalho.className = "category-row-head";
-            const nome = document.createElement("span");
-            nome.className = "category-name";
-            nome.textContent = categoria;
-            const valorFormatado = document.createElement("strong");
-            valorFormatado.className = "category-value";
-            valorFormatado.textContent = formatarMoeda(valor);
-            cabecalho.append(nome, valorFormatado);
-
-            const trilho = document.createElement("div");
-            trilho.className = "category-track";
-            trilho.setAttribute("role", "progressbar");
-            trilho.setAttribute("aria-valuemin", "0");
-            trilho.setAttribute("aria-valuemax", "100");
-            trilho.setAttribute("aria-valuenow", String(porcentagem));
-            trilho.setAttribute("aria-label", `${categoria}: ${Math.round(porcentagem)}%`);
-            const barra = document.createElement("span");
-            barra.className = "category-bar";
-            barra.style.width = `${porcentagem}%`;
-            trilho.append(barra);
-
-            linha.append(cabecalho, trilho);
-            lista.append(linha);
-        });
+        renderizarQuebraRelatorio(listaCategorias, categorias, totalDespesas,
+            (elemento, categoria) => { elemento.textContent = categoria; });
+        renderizarQuebraRelatorio(listaPlataformasRelatorio, plataformas, totalGanhos,
+            (elemento, plataforma) => { elemento.append(criarIdentificacaoApp(plataforma)); });
+        mensagemSemDespesas.hidden = categorias.length > 0;
+        mensagemSemGanhosRelatorio.hidden = plataformas.length > 0;
+        mensagem.hidden = true;
     } catch (erro) {
-        console.error("Falha ao carregar despesas por categoria:", erro);
+        console.error("Falha ao gerar o relatório:", erro);
+        mensagem.textContent = "Não foi possível gerar o relatório. Tente novamente.";
+        mensagem.classList.add("is-error");
     }
 }
+
+formularioRelatorio.addEventListener("submit", evento => {
+    evento.preventDefault();
+    carregarRelatorio();
+});
 
 async function carregarTotaisPorPlataforma() {
     const { inicio, fim } = periodoDoMes(filtroMes.value);
@@ -537,12 +599,15 @@ async function carregarLancamentos() {
         });
     }
 
-    await Promise.all([carregarCategorias(), carregarTotaisPorPlataforma()]);
+    await Promise.all([carregarTotaisPorPlataforma(), carregarRelatorio()]);
 }
 
 filtroMes.value = mesAtual();
 campoData.value = hojeIso();
 campoDataDespesa.value = hojeIso();
+const periodoInicialRelatorio = periodoDoMes(mesAtual());
+campoInicioRelatorio.value = periodoInicialRelatorio.inicio;
+campoFimRelatorio.value = periodoInicialRelatorio.fim;
 marcarAtalhoData();
 carregarLancamentos();
 

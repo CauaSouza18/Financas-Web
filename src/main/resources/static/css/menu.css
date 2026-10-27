@@ -127,13 +127,27 @@ h1 { margin: 0; font-size: clamp(29px, 3vw, 35px); line-height: 1.15; font-weigh
 .share { min-width: 42px; padding: 3px 7px; border-radius: 999px; background: var(--green-soft); color: var(--green); text-align: center; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .platform-empty { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
 
-/* Relatório de despesas por categoria */
-.category-report-content { padding: 0 24px 22px; }
+/* Relatórios por período */
+.report-filters { padding: 0 24px 20px; display: flex; align-items: end; gap: 12px; flex-wrap: wrap; }
+.report-field { min-width: 180px; display: grid; gap: 6px; color: var(--secondary-ink); font-size: 12px; font-weight: 700; }
+.report-field input { width: 100%; height: 40px; padding: 0 11px; border: 1px solid var(--field-line); border-radius: 10px; background: var(--table-head); color: var(--ink); }
+.report-field input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.report-status { margin: 0 24px 16px; color: var(--muted); font-size: 13px; }
+.report-status.is-error { color: var(--danger); }
+.report-summary { padding: 0 24px 22px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.report-total-card { min-width: 0; padding: 14px 16px; display: grid; gap: 5px; border: 1px solid var(--line); border-radius: 12px; background: var(--table-head); }
+.report-total-card span { color: var(--muted); font-size: 12px; }
+.report-total-card strong { color: var(--ink); font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.report-total-card .report-balance { color: var(--green); }
+.report-total-card .report-balance.is-negative { color: var(--danger); }
+.report-breakdowns { padding: 0 24px 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.report-breakdown { min-width: 0; }
+.report-breakdown h3 { margin: 0 0 10px; color: var(--ink); font-size: 14px; font-weight: 700; }
 .category-list { display: grid; }
 .category-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px 16px; padding: 13px 0; border-top: 1px solid var(--row-line); }
 .category-row:first-child { padding-top: 0; border-top: 0; }
 .category-row-head { grid-column: 1 / -1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.category-name { min-width: 0; overflow-wrap: anywhere; color: var(--body-ink); font-size: 13px; font-weight: 600; }
+.category-name { min-width: 0; flex: 1; overflow-wrap: anywhere; color: var(--body-ink); font-size: 13px; font-weight: 600; }
 .category-value { color: var(--ink); font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .category-track { grid-column: 1 / -1; height: 8px; overflow: hidden; border-radius: 999px; background: var(--table-head); }
 .category-bar { display: block; height: 100%; min-width: 2px; border-radius: inherit; background: linear-gradient(90deg, var(--green), var(--green-strong)); }
@@ -295,7 +309,12 @@ tbody tr:hover .empty-row { background: transparent; }
     .monthly-total { min-height: 158px; padding: 22px; border-right: 0; border-bottom: 1px solid var(--line); }
     .monthly-total strong { font-size: 36px; }
     .platform-list { padding: 14px 20px; }
-    .category-report-content { padding: 0 17px 17px; }
+    .report-filters { padding: 0 17px 17px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .report-field { min-width: 0; }
+    .report-filters .button { grid-column: 1 / -1; }
+    .report-status { margin: 0 17px 14px; }
+    .report-summary { padding: 0 17px 17px; grid-template-columns: 1fr; gap: 8px; }
+    .report-breakdowns { padding: 0 17px 17px; grid-template-columns: 1fr; gap: 20px; }
     .section-heading { min-height: 70px; padding: 14px 17px; }
     .entry-main { padding: 16px; grid-template-columns: 1fr; gap: 16px; }
     .expense-entry-main { grid-template-columns: 1fr; }
@@ -312,6 +331,8 @@ tbody tr:hover .empty-row { background: transparent; }
     .page-heading { margin-bottom: 20px; }
     .monthly-total { padding: 20px; }
     .monthly-total strong { font-size: 32px; }
+    .report-filters { grid-template-columns: 1fr; }
+    .report-filters .button { grid-column: auto; }
     th, td { padding-left: 10px; padding-right: 10px; }
     td.actions { padding-left: 0; }
     .row-button { display: block; width: 100%; margin: 0; padding: 3px 6px; text-align: right; }
