@@ -9,7 +9,8 @@ public class Conexao {
     public static Connection conectar() throws SQLException {
         String url = System.getenv("DB_URL");
         if (url == null) {
-            url = "jdbc:mysql://localhost:3306/app_financas";
+            url = "jdbc:mysql://HOST:25947/app_financas?sslMode=REQUIRED";
+
         }
         String user = System.getenv("DB_USER");
         String senha = System.getenv("DB_PASSWORD");
