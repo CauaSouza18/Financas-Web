@@ -12,6 +12,11 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new AutenticacaoInterceptor())
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/login", "/api/cadastro");
+                .excludePathPatterns(
+                        "/api/login",
+                        "/api/cadastro",
+                        "/api/recuperar-senha",
+                        "/api/redefinir-senha/**"
+                );
     }
 }

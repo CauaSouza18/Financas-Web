@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="theme-color" content="#101713">
+	<meta name="referrer" content="no-referrer">
+	<title>Nova senha | Finanças</title>
+	<link rel="stylesheet" href="../css/login.css?v=20261029.1">
+</head>
+<body>
+	<main class="layout">
+		<section class="welcome" aria-label="Apresentação">
+			<div class="brand"><span class="brand-mark" aria-hidden="true">F</span> Finanças</div>
+			<div class="intro">
+				<span class="eyebrow">Acesso seguro</span>
+				<h1>Crie uma nova senha.</h1>
+				<p>O link recebido por e-mail vale por 30 minutos e só pode ser usado uma vez.</p>
+			</div>
+			<div class="footnote">© 2026 Finanças. Controle no seu ritmo.</div>
+		</section>
+
+		<section class="form-panel" aria-labelledby="redefinir-title">
+			<h2 id="redefinir-title">Redefinir senha</h2>
+			<p id="mensagem-redefinicao" class="feedback-message" role="status" aria-live="polite">Validando seu link...</p>
+			<form id="form-redefinicao" action="#" method="post" hidden>
+				<label for="password">Nova senha</label>
+				<input id="password" name="password" type="password" autocomplete="new-password" minlength="6" placeholder="Pelo menos 6 caracteres" required>
+				<label for="confirmar-password">Confirmar nova senha</label>
+				<input id="confirmar-password" name="confirmar-password" type="password" autocomplete="new-password" minlength="6" placeholder="Digite a senha novamente" required>
+				<button id="botao-redefinicao" type="submit">Salvar nova senha</button>
+			</form>
+			<p class="signup"><a id="link-login" href="login.html" hidden>Ir para o login</a></p>
+		</section>
+	</main>
+	<script src="../js/redefinir-senha.js?v=20261029.1" defer></script>
+</body>
+</html>

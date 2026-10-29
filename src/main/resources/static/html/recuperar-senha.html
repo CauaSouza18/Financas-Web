@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="theme-color" content="#101713">
+	<title>Recuperar senha | Finanças</title>
+	<link rel="stylesheet" href="../css/login.css?v=20261029.1">
+</head>
+<body>
+	<main class="layout">
+		<section class="welcome" aria-label="Apresentação">
+			<div class="brand"><span class="brand-mark" aria-hidden="true">F</span> Finanças</div>
+			<div class="intro">
+				<span class="eyebrow">Acesso seguro</span>
+				<h1>Vamos recuperar seu acesso.</h1>
+				<p>Enviaremos um link temporário para o e-mail da sua conta.</p>
+			</div>
+			<div class="footnote">© 2026 Finanças. Controle no seu ritmo.</div>
+		</section>
+
+		<section class="form-panel" aria-labelledby="recuperar-title">
+			<h2 id="recuperar-title">Esqueceu a senha?</h2>
+			<p>Informe o e-mail usado no cadastro.</p>
+			<form id="form-recuperacao" action="#" method="post">
+				<label for="email">E-mail</label>
+				<input id="email" name="email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required>
+				<p id="mensagem-recuperacao" class="feedback-message" role="status" aria-live="polite" hidden></p>
+				<button id="botao-recuperacao" type="submit">Enviar link de recuperação</button>
+			</form>
+			<p class="signup"><a href="login.html">Voltar para entrar</a></p>
+		</section>
+	</main>
+	<script src="../js/recuperar-senha.js?v=20261029.1" defer></script>
+</body>
+</html>
