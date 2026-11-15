@@ -30,7 +30,11 @@ public class DespesaController {
     private static final Set<String> CATEGORIAS = Set.of(
             "Bike", "Alimentação", "Moradia", "Internet/Celular",
             "Transporte", "Saúde", "Lazer", "Outros");
-    private final DespesaDAO despesaDAO = new DespesaDAO();
+    private final DespesaDAO despesaDAO;
+
+    public DespesaController(DespesaDAO despesaDAO) {
+        this.despesaDAO = despesaDAO;
+    }
 
     @GetMapping
     public ArrayList<Despesa> listarPorPeriodo(
@@ -102,6 +106,9 @@ public class DespesaController {
     }
 
     private void validar(Despesa despesa) {
+        if (despesa == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe os dados da despesa.");
+        }
         if (despesa.getValor() == null || despesa.getValor().signum() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe um valor maior que zero.");
         }
