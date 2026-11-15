@@ -7,7 +7,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 
+import javax.sql.DataSource;
+
+import org.springframework.stereotype.Repository;
+
+@Repository
 public class RecuperacaoSenhaDAO {
+
+    private final DataSource dataSource;
+
+    public RecuperacaoSenhaDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     private void garantirTabela(Connection conn) throws SQLException {
         String sql = "CREATE TABLE IF NOT EXISTS recuperacao_senha_tokens ("
                 + "token_hash CHAR(64) NOT NULL PRIMARY KEY, "
@@ -26,7 +38,7 @@ public class RecuperacaoSenhaDAO {
     public boolean podeSolicitar(int usuarioId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM recuperacao_senha_tokens "
                 + "WHERE usuario_id = ? AND criado_em >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 MINUTE)";
-        try (Connection conn = Conexao.conectar()) {
+        try (Connection conn = dataSource.getConnection()) {
             garantirTabela(conn);
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
                 statement.setInt(1, usuarioId);
@@ -42,7 +54,7 @@ public class RecuperacaoSenhaDAO {
         String limparUsuario = "DELETE FROM recuperacao_senha_tokens WHERE usuario_id = ?";
         String inserir = "INSERT INTO recuperacao_senha_tokens (usuario_id, token_hash, expira_em, criado_em) "
                 + "VALUES (?, ?, ?, UTC_TIMESTAMP())";
-        try (Connection conn = Conexao.conectar()) {
+        try (Connection conn = dataSource.getConnection()) {
             garantirTabela(conn);
             try (Statement cleanup = conn.createStatement()) {
                 cleanup.executeUpdate(limparExpirados);
@@ -63,7 +75,7 @@ public class RecuperacaoSenhaDAO {
     public boolean tokenValido(String tokenHash) throws SQLException {
         String sql = "SELECT 1 FROM recuperacao_senha_tokens "
                 + "WHERE token_hash = ? AND expira_em > UTC_TIMESTAMP()";
-        try (Connection conn = Conexao.conectar()) {
+        try (Connection conn = dataSource.getConnection()) {
             garantirTabela(conn);
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
                 statement.setString(1, tokenHash);
@@ -80,7 +92,7 @@ public class RecuperacaoSenhaDAO {
                 + "SET u.senha_hash = ?, r.expira_em = UTC_TIMESTAMP() "
                 + "WHERE r.token_hash = ? AND r.expira_em > UTC_TIMESTAMP()";
         String consumir = "DELETE FROM recuperacao_senha_tokens WHERE token_hash = ?";
-        try (Connection conn = Conexao.conectar()) {
+        try (Connection conn = dataSource.getConnection()) {
             garantirTabela(conn);
             int atualizados;
             try (PreparedStatement statement = conn.prepareStatement(atualizar)) {
@@ -101,7 +113,7 @@ public class RecuperacaoSenhaDAO {
 
     public void expirarToken(String tokenHash) throws SQLException {
         String sql = "UPDATE recuperacao_senha_tokens SET expira_em = UTC_TIMESTAMP() WHERE token_hash = ?";
-        try (Connection conn = Conexao.conectar()) {
+        try (Connection conn = dataSource.getConnection()) {
             garantirTabela(conn);
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
                 statement.setString(1, tokenHash);

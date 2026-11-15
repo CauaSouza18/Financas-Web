@@ -9,16 +9,28 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import javax.sql.DataSource;
+
+import org.springframework.stereotype.Repository;
+
 import com.app.financas.model.Ganho;
 
+@Repository
 public class GanhoDAO {
+
+    private final DataSource dataSource;
+
+    public GanhoDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     public ArrayList<Ganho> listGanhos(int usuarioId) throws SQLException {
         String sql = "SELECT id, valor, plataforma, Cadastrado_Em AS data FROM ganhos "
                 + "WHERE usuario_id = ? ORDER BY Cadastrado_Em, id";
         ArrayList<Ganho> ganhos = new ArrayList<>();
 
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setInt(1, usuarioId);
             try (var resultado = comando.executeQuery()) {
                 while (resultado.next()) {
@@ -40,7 +52,7 @@ public class GanhoDAO {
                 + "WHERE usuario_id = ? AND Cadastrado_Em BETWEEN ? AND ? ORDER BY Cadastrado_Em, id";
         ArrayList<Ganho> ganhos = new ArrayList<>();
 
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setInt(1, usuarioId);
             comando.setDate(2, java.sql.Date.valueOf(inicio));
             comando.setDate(3, java.sql.Date.valueOf(fim));
@@ -62,7 +74,7 @@ public class GanhoDAO {
         String sql = "UPDATE ganhos set valor = ?, plataforma = ?, Cadastrado_Em = ? "
                 + "WHERE id = ? AND usuario_id = ?";
         int linhasAfetadas;
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setBigDecimal(1, ganho.getValor());
             comando.setString(2, ganho.getPlataforma());
             comando.setObject(3, ganho.getData());
@@ -77,7 +89,7 @@ public class GanhoDAO {
     public boolean deletar(int id, int usuarioId) throws SQLException {
         String sql = "DELETE from ganhos WHERE id = ? AND usuario_id = ?";
         int linhasAfetadas;
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setInt(1, id);
             comando.setInt(2, usuarioId);
             linhasAfetadas = comando.executeUpdate();
@@ -90,7 +102,7 @@ public class GanhoDAO {
     public void salvar(Ganho ganho, int usuarioId) throws SQLException {
         String sql = "INSERT INTO ganhos (valor, plataforma, Cadastrado_Em, usuario_id) VALUES (?, ?, ?, ?)";
 
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setBigDecimal(1, ganho.getValor());
             comando.setString(2, ganho.getPlataforma());
             comando.setObject(3, ganho.getData());
@@ -98,10 +110,11 @@ public class GanhoDAO {
             comando.executeUpdate();
         }
     }
+
     public double totalPorPlataforma(String plataforma, int usuarioId) throws SQLException {
         String sql = "SELECT SUM(valor) FROM ganhos WHERE plataforma = ? AND usuario_id = ?";
 
-        try (Connection conn = Conexao.conectar();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setString(1, plataforma);
             comando.setInt(2, usuarioId);
@@ -123,7 +136,7 @@ public class GanhoDAO {
                 + "GROUP BY plataforma ORDER BY SUM(valor) DESC, plataforma";
         Map<String, Double> totais = new LinkedHashMap<>();
 
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setInt(1, usuarioId);
             comando.setDate(2, java.sql.Date.valueOf(inicio));
             comando.setDate(3, java.sql.Date.valueOf(fim));

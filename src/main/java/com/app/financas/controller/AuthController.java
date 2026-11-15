@@ -3,6 +3,7 @@ package com.app.financas.controller;
 import com.app.financas.dao.UsuarioDAO;
 import com.app.financas.model.Usuario;
 import com.app.financas.service.RecuperacaoSenhaService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,11 +19,12 @@ import java.util.Map;
 @RequestMapping("/api")
 public class AuthController {
 
-    private final UsuarioDAO usuarioDAO = new UsuarioDAO();
+    private final UsuarioDAO usuarioDAO;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final RecuperacaoSenhaService recuperacaoSenhaService;
 
-    public AuthController(RecuperacaoSenhaService recuperacaoSenhaService) {
+    public AuthController(UsuarioDAO usuarioDAO, RecuperacaoSenhaService recuperacaoSenhaService) {
+        this.usuarioDAO = usuarioDAO;
         this.recuperacaoSenhaService = recuperacaoSenhaService;
     }
 
@@ -53,7 +55,9 @@ public class AuthController {
         }
         try {
             String email = dados.email().trim().toLowerCase();
-            if (usuarioDAO.buscarPorEmail(email) != null) throw new ResponseStatusException(HttpStatus.CONFLICT);
+            if (usuarioDAO.buscarPorEmail(email) != null) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
+            }
             String hash = encoder.encode(dados.senha());
             Usuario usuario = new Usuario();
             usuario.setEmail(email);
@@ -136,7 +140,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody LoginRequest dados, HttpSession sessao) {
+    public Map<String, String> login(@RequestBody LoginRequest dados, HttpSession sessao,
+                                     HttpServletRequest request) {
         if (dados.email() == null || dados.email().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o email");
         }
@@ -150,6 +155,8 @@ public class AuthController {
             if (usuario == null || !encoder.matches(dados.senha(), usuario.getSenhaHash())) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "E-mail ou senha inválidos");
             }
+            // Previne session fixation: troca o ID da sessão após o login.
+            request.changeSessionId();
             sessao.setAttribute("usuarioId", usuario.getId());
             return Map.of("nome", usuario.getNome());
 
