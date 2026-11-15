@@ -29,7 +29,11 @@ import com.app.financas.model.Ganho;
 public class GanhoController {
 
     private static final Set<String> PLATAFORMAS_PERMITIDAS = Set.of("99", "iFood", "Uber Driver");
-    private final GanhoDAO ganhoDAO = new GanhoDAO();
+    private final GanhoDAO ganhoDAO;
+
+    public GanhoController(GanhoDAO ganhoDAO) {
+        this.ganhoDAO = ganhoDAO;
+    }
 
     @GetMapping
     public ArrayList<Ganho> listar(
