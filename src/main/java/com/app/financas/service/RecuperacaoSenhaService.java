@@ -26,14 +26,17 @@ public class RecuperacaoSenhaService {
     private static final SecureRandom secureRandom = new SecureRandom();
     private static final int TOKEN_TTL_MINUTOS = 30;
 
-    private final UsuarioDAO usuarioDAO = new UsuarioDAO();
-    private final RecuperacaoSenhaDAO recuperacaoSenhaDAO = new RecuperacaoSenhaDAO();
+    private final UsuarioDAO usuarioDAO;
+    private final RecuperacaoSenhaDAO recuperacaoSenhaDAO;
     private final EmailRecuperacaoService emailService;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
 
-    public RecuperacaoSenhaService(EmailRecuperacaoService emailService) {
+    public RecuperacaoSenhaService(UsuarioDAO usuarioDAO, RecuperacaoSenhaDAO recuperacaoSenhaDAO,
+                                   EmailRecuperacaoService emailService) {
+        this.usuarioDAO = usuarioDAO;
+        this.recuperacaoSenhaDAO = recuperacaoSenhaDAO;
         this.emailService = emailService;
     }
 
