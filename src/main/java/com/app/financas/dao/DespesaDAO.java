@@ -9,15 +9,26 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
+import org.springframework.stereotype.Repository;
+
 import com.app.financas.model.Despesa;
 
+@Repository
 public class DespesaDAO {
+
+    private final DataSource dataSource;
+
+    public DespesaDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     public void salvar(Despesa despesa, int usuarioId) throws SQLException {
         String sql = "INSERT INTO despesas (valor, categoria, descricao, data, usuario_id) "
                 + "VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setBigDecimal(1, despesa.getValor());
             comando.setString(2, despesa.getCategoria());
             comando.setString(3, despesa.getDescricao());
@@ -32,7 +43,7 @@ public class DespesaDAO {
                 + "WHERE usuario_id = ? AND data BETWEEN ? AND ? ORDER BY data, id";
         ArrayList<Despesa> despesas = new ArrayList<>();
 
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setInt(1, usuarioId);
             comando.setDate(2, java.sql.Date.valueOf(inicio));
             comando.setDate(3, java.sql.Date.valueOf(fim));
@@ -58,7 +69,7 @@ public class DespesaDAO {
                 + "GROUP BY categoria ORDER BY SUM(valor) DESC, categoria";
         Map<String, Double> totais = new LinkedHashMap<>();
 
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setInt(1, usuarioId);
             comando.setDate(2, java.sql.Date.valueOf(inicio));
             comando.setDate(3, java.sql.Date.valueOf(fim));
@@ -75,7 +86,7 @@ public class DespesaDAO {
         String sql = "UPDATE despesas SET valor = ?, categoria = ?, descricao = ?, data = ? "
                 + "WHERE id = ? AND usuario_id = ?";
 
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setBigDecimal(1, despesa.getValor());
             comando.setString(2, despesa.getCategoria());
             comando.setString(3, despesa.getDescricao());
@@ -89,7 +100,7 @@ public class DespesaDAO {
     public boolean deletar(int id, int usuarioId) throws SQLException {
         String sql = "DELETE FROM despesas WHERE id = ? AND usuario_id = ?";
 
-        try (Connection conn = Conexao.conectar(); PreparedStatement comando = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement comando = conn.prepareStatement(sql)) {
             comando.setInt(1, id);
             comando.setInt(2, usuarioId);
             return comando.executeUpdate() > 0;
